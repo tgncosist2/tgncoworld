@@ -1,0 +1,102 @@
+.mobile-main-page {
+  min-height: 100vh;
+  background-color: #2C2C2C;
+  padding: 1rem;
+}
+
+.mobile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 0 1rem;
+}
+
+.mobile-header h1 {
+  color: #fff;
+  font-size: 1.8rem;
+  margin: 0;
+}
+
+.mobile-logout-button {
+  padding: 0.6rem 1.2rem;
+  background: linear-gradient(45deg, #ff8e8e, #ff6b6b);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mobile-game-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 0 1rem;
+}
+
+.mobile-game-card {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.mobile-game-card:active {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.mobile-game-card h2 {
+  color: #fff;
+  margin: 0 0 0.8rem 0;
+  font-size: 1.3rem;
+}
+
+.mobile-game-card p {
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.mobile-header-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.mobile-header-logo {
+  width: 35px;
+  height: 35px;
+  object-fit: contain;
+}
+
+.mobile-header-buttons {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.mobile-ranking-button {
+  padding: 0.6rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.mobile-ranking-button:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(45deg, #ff8e8e, #ff6b6b);
+  box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+}
+
+.mobile-ranking-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+} 

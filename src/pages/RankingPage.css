@@ -1,0 +1,161 @@
+.ranking-page {
+  min-height: 100vh;
+  background-color: #2C2C2C;
+  padding: 2rem;
+  color: white;
+}
+
+.ranking-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.ranking-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.game-nav {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.game-nav-button {
+  padding: 0.8rem 1.5rem;
+  font-size: 1.1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.game-nav-button.active {
+  background: linear-gradient(45deg, #ff8e8e, #ff6b6b);
+}
+
+.ranking-table {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.ranking-table-header {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+.ranking-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.ranking-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.top-three {
+  font-size: 1.2rem;
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.trophy {
+  margin-left: 0.5rem;
+  font-size: 1.5rem;
+  vertical-align: middle;
+}
+
+.trophy.gold {
+  color: #FFD700;
+}
+
+.trophy.silver {
+  color: #C0C0C0;
+}
+
+.trophy.bronze {
+  color: #CD7F32;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.page-button {
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.page-button.active {
+  background: linear-gradient(45deg, #ff8e8e, #ff6b6b);
+}
+
+.back-button {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+  padding: 1rem;
+  background: linear-gradient(45deg, #ffffff, #ffffff);
+  color: black;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.back-button:hover {
+  background: linear-gradient(45deg, #ff8e8e, #ff6b6b);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+}
+
+@media (max-width: 768px) {
+  .ranking-page {
+    padding: 1rem;
+  }
+
+  .ranking-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .game-nav-button {
+    padding: 0.6rem 1rem;
+    font-size: 1rem;
+  }
+
+  .ranking-table {
+    padding: 1rem;
+  }
+
+  .top-three {
+    font-size: 1.1rem;
+  }
+
+  .trophy {
+    font-size: 1.2rem;
+  }
+} 

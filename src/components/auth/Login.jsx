@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import React, { useState, useEffect } from 'react';
+import { signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { auth } from '../../firebase';
 import './Login.css';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -9,6 +10,18 @@ const Login = () => {
     password: ''
   });
   const [error, setError] = useState('');
+  const navigate = useNavigate();
+
+  // 로그인 상태 확인
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        navigate('/main');
+      }
+    });
+
+    return () => unsubscribe();
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,9 +36,12 @@ const Login = () => {
     setError('');
     
     try {
+      // 로그인 상태 유지 설정
+      await setPersistence(auth, browserLocalPersistence);
+      
+      // 로그인 시도
       await signInWithEmailAndPassword(auth, formData.email, formData.password);
-      // 로그인 성공 시 처리 (예: 홈페이지로 리다이렉트)
-      console.log('로그인 성공!');
+      navigate('/main');
     } catch (error) {
       console.error('로그인 에러:', error);
       switch (error.code) {
@@ -77,6 +93,7 @@ const Login = () => {
         </div>
         <button type="submit" className="login-button">로그인</button>
         <button type="button" className="signup-button" onClick={() => window.location.href = "/signup"}>회원가입</button>
+        <button type="button" className="signup-button" onClick={() => window.location.href = "/flappybird"}>플래피버드</button>
       </form>
     </div>
   );
