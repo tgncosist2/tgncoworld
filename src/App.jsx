@@ -60,12 +60,18 @@ function App() {
     const checkTimeout = () => {
       if (isAuthenticated && lastActivity) {
         const now = new Date();
-        const diffInMinutes = (now - lastActivity) / (1000 * 60);
+        const diffInMinutes = Math.floor((now - lastActivity) / (1000 * 60));
         
         if (diffInMinutes >= 30) {
-          signOut(auth);
-          setIsAuthenticated(false);
-          setLastActivity(null);
+          signOut(auth)
+            .then(() => {
+              setIsAuthenticated(false);
+              setLastActivity(null);
+              console.log('30분 이상 활동이 없어 자동 로그아웃되었습니다.');
+            })
+            .catch((error) => {
+              console.error('로그아웃 중 오류 발생:', error);
+            });
         }
       }
     };

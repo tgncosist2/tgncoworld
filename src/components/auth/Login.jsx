@@ -93,7 +93,6 @@ const Login = () => {
         </div>
         <button type="submit" className="login-button">로그인</button>
         <button type="button" className="signup-button" onClick={() => window.location.href = "/signup"}>회원가입</button>
-        <button type="button" className="signup-button" onClick={() => window.location.href = "/flappybird"}>플래피버드</button>
       </form>
     </div>
   );
