@@ -20,6 +20,10 @@ const RankingPage = () => {
     tetris: {
       title: '테트리스',
       scoreField: 'tetrisHighScore'
+    },
+    suika: {
+      title: '수박 게임',
+      scoreField: 'suikaHighScore'
     }
   };
 
@@ -94,7 +98,7 @@ const RankingPage = () => {
   return (
     <div className="ranking-page">
       <header className="ranking-header">
-        <h1>게임 랭킹</h1>
+        <h1>{gamesConfig[selectedGame].title} 랭킹</h1>
         <nav className="game-nav">
           <button 
             className={`game-nav-button ${selectedGame === 'flappybird' ? 'active' : ''}`}
@@ -107,6 +111,12 @@ const RankingPage = () => {
             onClick={() => setSelectedGame('tetris')}
           >
             테트리스
+          </button>
+          <button
+            className={`game-nav-button ${selectedGame === 'suika' ? 'active' : ''}`}
+            onClick={() => setSelectedGame('suika')}
+          >
+            수박 게임
           </button>
         </nav>
       </header>

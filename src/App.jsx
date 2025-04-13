@@ -7,6 +7,7 @@ import MainPage from './pages/MainPage';
 import MobileMainPage from './pages/MobileMainPage';
 import RankingPage from './pages/RankingPage';
 import TetrisGame from './components/auth/TetrisGame';
+import SuikaGamePage from './pages/SuikaGamePage';
 import { auth, signOut } from './firebase';
 import './styles/App.css';
 
@@ -117,6 +118,10 @@ function App() {
         <Route 
           path="/tetris" 
           element={isAuthenticated ? <TetrisGame /> : <Navigate to="/" replace />} 
+        />
+        <Route 
+          path="/suika"
+          element={isAuthenticated ? <SuikaGamePage /> : <Navigate to="/" replace />}
         />
       </Routes>
     </Router>
