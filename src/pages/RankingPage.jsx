@@ -16,6 +16,10 @@ const RankingPage = () => {
     flappybird: {
       title: '플래피버드',
       scoreField: 'flappyBirdHighScore'
+    },
+    tetris: {
+      title: '테트리스',
+      scoreField: 'tetrisHighScore'
     }
   };
 
@@ -97,6 +101,12 @@ const RankingPage = () => {
             onClick={() => setSelectedGame('flappybird')}
           >
             플래피버드
+          </button>
+          <button
+            className={`game-nav-button ${selectedGame === 'tetris' ? 'active' : ''}`}
+            onClick={() => setSelectedGame('tetris')}
+          >
+            테트리스
           </button>
         </nav>
       </header>

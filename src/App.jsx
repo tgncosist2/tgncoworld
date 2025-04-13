@@ -6,6 +6,7 @@ import FlappyBirdGamePage from './pages/FlappyBirdGamePage';
 import MainPage from './pages/MainPage';
 import MobileMainPage from './pages/MobileMainPage';
 import RankingPage from './pages/RankingPage';
+import TetrisGame from './components/auth/TetrisGame';
 import { auth, signOut } from './firebase';
 import './styles/App.css';
 
@@ -112,6 +113,10 @@ function App() {
         <Route 
           path="/flappybird" 
           element={isAuthenticated ? <FlappyBirdGamePage /> : <Navigate to="/" replace />} 
+        />
+        <Route 
+          path="/tetris" 
+          element={isAuthenticated ? <TetrisGame /> : <Navigate to="/" replace />} 
         />
       </Routes>
     </Router>

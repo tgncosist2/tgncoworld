@@ -1,0 +1,348 @@
+.tetris-container {
+  min-height: 100vh;
+  padding: 1rem;
+  background-color: #2C2C2C;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2rem;
+  color: #eee;
+  font-family: sans-serif;
+  box-sizing: border-box;
+}
+
+.game-area {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.game-canvas {
+  display: block;
+  background-color: #000;
+  border: 3px solid #555;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.info-panel {
+  width: 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.info-box {
+  background-color: #333;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #444;
+  text-align: center;
+}
+
+.info-box h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  color: #aaa;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.info-box p {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.next-piece-box {
+  padding-bottom: 1rem;
+}
+
+.next-piece-canvas {
+  display: block;
+  margin: 0.5rem auto 0;
+  background-color: #333;
+  border: 1px solid #555;
+}
+
+.game-over-overlay,
+.paused-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  text-align: center;
+  z-index: 10;
+  border-radius: 5px;
+}
+
+.game-over-overlay h2,
+.paused-overlay h2 {
+  margin: 0 0 1rem 0;
+  font-size: 2rem;
+  color: #ff6b6b;
+}
+
+.paused-overlay h2 {
+  color: #ffe066;
+}
+
+.game-over-overlay p {
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+.paused-overlay p {
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+.new-high-score-text {
+  color: #ffd700;
+  font-weight: bold;
+  margin-bottom: 1rem !important;
+}
+
+.reset-button,
+.pause-button,
+.back-button {
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  font-weight: 600;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.reset-button {
+  background-color: #4CAF50;
+}
+
+.reset-button:hover {
+  background-color: #45a049;
+  transform: translateY(-1px);
+}
+
+.pause-button {
+  background-color: #ffc107;
+  color: #333;
+}
+
+.pause-button:hover {
+  background-color: #e0a800;
+  transform: translateY(-1px);
+}
+
+.pause-button:disabled {
+  background-color: #666;
+  cursor: not-allowed;
+  color: #999;
+}
+
+.back-button {
+  background: linear-gradient(45deg, #6c757d, #5a6268);
+  color: white;
+}
+
+.back-button:hover {
+  background: linear-gradient(45deg, #5a6268, #4e555b);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+  .tetris-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .info-panel {
+    width: 90%;
+    max-width: 300px;
+    order: 2;
+  }
+
+  .game-area {
+    width: 90%;
+    max-width: calc(10 * 30px);
+    order: 1;
+  }
+
+  .info-box p {
+    font-size: 1rem;
+  }
+
+  .game-over-overlay h2,
+  .paused-overlay h2 {
+    font-size: 1.5rem;
+  }
+}
+
+/* --- Mobile Controls (Hidden by default) --- */
+.mobile-controls {
+  display: none; /* Hidden on larger screens */
+  width: 100%;   /* Take width of its container (.game-column) */
+  margin-top: 0.5rem; /* Space above buttons */
+  justify-content: space-around; /* Distribute buttons */
+  align-items: center; /* Align vertically */
+  gap: 1rem;      /* Space between buttons */
+}
+
+.control-button {
+  flex: 1; /* Allow buttons to grow, but limit by max-width */
+  max-width: 80px; /* Limit button width */
+  padding: 0.8rem 0.5rem;
+  font-size: 1.2rem; /* Larger icons/text */
+  line-height: 1; /* Ensure text vertical centering */
+  font-weight: bold;
+  border: none;
+  border-radius: 8px; /* Slightly more rounded */
+  background-color: #555;
+  color: white;
+  cursor: pointer;
+  text-align: center;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3); /* Add depth */
+}
+
+.control-button:active {
+  background-color: #777;
+  transform: translateY(1px);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.4);
+}
+
+/* Specific button styles */
+.control-button.left { background-color: #0dc2ff; }
+.control-button.right { background-color: #0dc2ff; }
+.control-button.down { background-color: #f538ff; }
+/* .control-button.drop removed */
+
+
+/* --- Adjustments for Small Mobile (max-width: 375px) --- */
+@media (max-width: 375px) {
+  .tetris-container {
+    flex-direction: row;    /* Side-by-side layout */
+    align-items: flex-start;/* Align top */
+    padding: 0.3rem;        /* Minimal padding */
+    gap: 0.5rem;            /* Small gap between columns */
+    height: 100vh;          /* Fill viewport height */
+    overflow: hidden;       /* Prevent scrolling */
+  }
+
+  /* New column for game and controls */
+  .game-column {
+    display: flex;
+    flex-direction: column; /* Stack game and controls */
+    flex: 3; /* Give game column more space (adjust ratio as needed) */
+    /* Limit width based on game cols? calc(10 * 20px + border)? */
+    min-width: 0; /* Allow shrinking */
+  }
+
+  .game-area {
+    width: 100%;          /* Fill game-column width */
+    order: 1;             /* Game canvas first */
+    margin-bottom: 0;     /* Remove bottom margin */
+    max-width: none;      /* Remove max-width if set previously */
+  }
+
+  .game-canvas {
+     max-width: 100%;      /* Scale canvas within game-area */
+     height: auto;         /* Maintain aspect ratio */
+     border-width: 2px;    /* Thinner border */
+     /* BLOCK_SIZE constant in JS likely needs adjustment for smaller screens */
+     /* Example: If BLOCK_SIZE becomes 20px, canvas width ~200px */
+  }
+
+  .mobile-controls {
+    display: flex;
+    order: 2;
+    width: 100%;
+    padding: 0 0.5rem;
+    box-sizing: border-box;
+    margin-top: 0.5rem;
+    gap: 0.4rem;
+    max-width: none;
+    flex-shrink: 0;
+    justify-content: space-around;
+  }
+
+  .control-button {
+      font-size: 1.3rem;
+      padding: 0.8rem 0.4rem;
+      min-height: 44px;
+      border-radius: 10px;
+      flex: 1;
+      text-align: center;
+      max-width: none;
+  }
+
+  .info-panel {
+    flex: 1;
+    order: 2;
+    width: auto;
+    max-width: none;
+    height: calc(100vh - 0.6rem);
+    overflow-y: auto;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 0.3rem;
+    gap: 0.5rem;
+  }
+
+  .info-box {
+    flex-basis: auto;
+    width: 100%;
+    padding: 0.3rem;
+    min-width: unset;
+    box-sizing: border-box;
+  }
+
+  .info-box h3 {
+    font-size: 0.65rem;
+    margin-bottom: 0.1rem;
+  }
+
+  .info-box p {
+    font-size: 0.8rem;
+  }
+
+  .next-piece-box {
+      padding-bottom: 0.3rem;
+  }
+
+  .next-piece-canvas {
+     width: 40px;
+     height: 40px;
+     margin-top: 0.1rem;
+  }
+
+  .back-button,
+  .pause-button {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 0.75rem;
+    margin-top: 0.4rem;
+    box-sizing: border-box;
+  }
+
+  .game-over-overlay h2,
+  .paused-overlay h2 { font-size: 1.3rem; }
+  .game-over-overlay p,
+  .paused-overlay p { font-size: 0.8rem; }
+  .reset-button { padding: 0.6rem 0.8rem; font-size: 0.8rem; }
+}
+/* --- End of Mobile Adjustments --- */ 
