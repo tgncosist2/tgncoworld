@@ -7,7 +7,7 @@ import MainPage from './pages/MainPage';
 import MobileMainPage from './pages/MobileMainPage';
 import RankingPage from './pages/RankingPage';
 import { auth, signOut } from './firebase';
-import './App.css';
+import './styles/App.css';
 
 function App() {
   const [isMobile, setIsMobile] = useState(false);
