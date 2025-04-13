@@ -154,11 +154,6 @@
   }
 
   /* Keep original hover effect */
-  .suika-container .back-button:hover {
-     /* Original hover effect is inherited unless specifically overridden */
-      /* transform: translateY(-2px); (this is inherited) */
-       /* background change (this is inherited) */
-       /* box-shadow change (this is inherited) */
-       /* No need to redeclare hover styles if they shouldn't change */
-   }
+  /* The empty ruleset below caused a linting error and is removed. */
+  /* Original hover styles defined earlier will apply by default. */
 } 

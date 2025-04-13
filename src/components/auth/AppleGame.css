@@ -1,0 +1,260 @@
+.apple-game-component {
+  /* Optional: Add styles for the root component if needed */
+}
+
+.apple-game-component .game-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* min-height: 100vh; */ /* REMOVED to allow natural height */
+  padding: 100px; /* 100px padding around the game area */
+  background-color: #2c2c2c; /* White background for the game screen */
+  position: relative; /* Context for absolute positioning (score, drag box) */
+  overflow: hidden; /* Prevent drag box from showing outside */
+}
+
+.apple-game-component .game-area {
+  display: flex;
+  align-items: flex-start;
+  gap: 50px; /* Space between grid and timer */
+}
+
+.apple-game-component .grid-container {
+  display: grid;
+  grid-template-rows: repeat(10, 35px);
+  grid-template-columns: repeat(17, 35px);
+  gap: 2px; /* Gap between cells */
+  background-color: #f0f0f0; /* Light background for the grid itself */
+  border: 3px solid #48BB78; /* Green border */
+  padding: 5px;
+  border-radius: 5px;
+  user-select: none; /* Prevent text selection */
+  position: relative; /* Context for apples? Maybe not needed */
+  transition: background-color 0.5s ease; /* Add transition for background color change */
+}
+
+.apple-game-component .grid-cell {
+  /* No background or border for the cell itself */
+  border-radius: 3px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative; /* Important for containing the absolute positioned apple */
+  min-width: 35px; /* Ensure cell takes up space */
+  min-height: 35px;
+}
+
+/* --- Apple Styles --- */
+.apple-game-component .apple {
+  position: relative; /* Relative to the grid cell */
+  width: 85%;
+  height: 85%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: default; /* Default cursor for apples */
+}
+
+.apple-game-component .apple-body {
+  width: 100%;
+  height: 100%;
+  background-color: #E53E3E; /* Red apple body */
+  border-radius: 50%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.apple-game-component .apple-leaf {
+  width: 45%;
+  height: 30%;
+  background-color: #48BB78; /* Green leaf */
+  border-radius: 50% / 50%;
+  position: absolute;
+  top: -8%;
+  left: 15%;
+  transform: rotate(-35deg);
+  z-index: 2;
+  box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+
+.apple-game-component .apple-number {
+  position: relative; /* Relative to .apple container */
+  color: #ffffff; /* White number text */
+  font-size: 0.9em;
+  font-weight: bold;
+  text-align: center;
+  line-height: 1;
+  z-index: 3; /* Number on top */
+  user-select: none;
+  /* Removed background, padding, border-radius, box-shadow */
+}
+
+/* --- Timer Styles --- */
+.apple-game-component .timer-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 30px;
+}
+
+.apple-game-component .gauge-bar-background {
+  width: 15px;
+  height: 300px; /* Adjust as needed */
+  background-color: #e0e0e0;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.apple-game-component .gauge-bar-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #48BB78; /* Green fill */
+  border-radius: 8px;
+  transition: height 0.1s linear;
+}
+
+.apple-game-component .clock-icon {
+  font-size: 24px;
+}
+
+/* --- Selected Apple Style --- */
+.apple-game-component .apple.selected .apple-body {
+  background-color: #F6E05E; /* Yellow selected body */
+  box-shadow: 0 0 8px #F6E05E; /* Glow effect */
+}
+
+/* --- Drag Selection Box Style --- */
+.apple-game-component .drag-selection {
+    position: absolute; /* Positioned relative to game-container */
+    border: 1px dashed #4299E1; /* Blue dashed border */
+    background-color: rgba(66, 153, 225, 0.2); /* Light blue background */
+    pointer-events: none; /* Allow clicks to pass through */
+    z-index: 100;
+    top: 0; /* Default top/left for transform */
+    left: 0;
+}
+
+/* --- Score Display Style --- */
+.apple-game-component .score-display {
+  position: absolute;
+  top: 50px; /* Position from top of game-container */
+  left: 100px; /* Position from left of game-container */
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #2D3748;
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 5px 10px;
+  border-radius: 5px;
+  z-index: 110;
+}
+
+/* --- High Score Corner Display Style --- */
+.apple-game-component .high-score-corner-display {
+  position: absolute; /* Position relative to game-container */
+  top: 50px; /* Same vertical position as score */
+  right: 180px; /* Position from the right */
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #2D3748; /* Dark grey color */
+  background-color: rgba(255, 255, 255, 0.7); /* Semi-transparent white background */
+  padding: 5px 10px;
+  border-radius: 5px;
+  z-index: 110; /* Same z-index as score */
+}
+
+/* Style for grid container when game is over */
+.apple-game-component .grid-container.grid-over {
+  background-color: #d3d3d3; /* Light grey background */
+  border-color: #a9a9a9; /* Darker grey border */
+  pointer-events: none; /* Disable clicks/drags on apples inside */
+}
+
+/* Optional: Style for the centered game over text */
+.apple-game-component .game-over-text-centered {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #333; /* Dark text color */
+    font-size: 3em;
+    font-weight: bold;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.85); /* Semi-transparent white background */
+    padding: 30px;
+    border-radius: 10px;
+    z-index: 50; /* Below score display but above grid content potentially */
+    line-height: 1.4;
+}
+
+/* Style for high score display within game over */
+.apple-game-component .high-score-display {
+    font-size: 0.7em; /* Smaller font size */
+    margin-top: 10px;
+    color: #f0f0f0; /* Light grey color */
+}
+
+/* Style for new high score message */
+.apple-game-component .new-high-score-message {
+    font-size: 0.8em;
+    margin-top: 15px;
+    color: #F6E05E; /* Yellow color like selected apple */
+    font-weight: bold;
+}
+
+/* Restart Button Style (within game over text) */
+.apple-game-component .restart-button {
+    display: block; /* Place button on its own line */
+    margin-top: 25px;
+    padding: 12px 25px;
+    margin-left: 50px;
+    font-size: 0.6em; /* Relative to parent (game-over-text-centered) */
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #48BB78; /* Green button */
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.apple-game-component .restart-button:hover {
+    background-color: #38A169; /* Darker green on hover */
+}
+
+/* Main Menu Button Style (below game container) */
+.apple-game-component .main-menu-button {
+    display: block; /* Center it potentially or position as needed */
+    margin: 30px auto 0; /* Add space above, center horizontally */
+    padding: 15px 30px;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #4A5568; /* Dark grey text */
+    background-color: #E2E8F0; /* Light grey background */
+    border: 1px solid #CBD5E0; /* Subtle border */
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.apple-game-component .main-menu-button:hover {
+    background-color: #CBD5E0; /* Slightly darker grey */
+    border-color: #A0AEC0;
+}
+
+/* --- Game Over Overlay Styles --- REMOVED
+.apple-game-component .game-over-overlay {
+  ...
+}
+.apple-game-component .game-over-text {
+  ...
+}
+.apple-game-component .final-score {
+  ...
+}
+*/ 

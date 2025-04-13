@@ -44,6 +44,11 @@ const MainPage = () => {
           <h2>수박 게임</h2>
           <p>과일을 합쳐 수박을 만들어보세요!</p>
         </div>
+
+        <div className="game-card" onClick={() => navigate('/apple')}>
+          <h2>사과 게임</h2>
+          <p>사과를 모아 10을 만들어보세요!</p>
+        </div>
       </div>
     </div>
   );

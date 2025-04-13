@@ -24,6 +24,10 @@ const RankingPage = () => {
     suika: {
       title: '수박 게임',
       scoreField: 'suikaHighScore'
+    },
+    applegame: {
+      title: '사과 게임',
+      scoreField: 'appleGameHighScore'
     }
   };
 
@@ -117,6 +121,12 @@ const RankingPage = () => {
             onClick={() => setSelectedGame('suika')}
           >
             수박 게임
+          </button>
+          <button
+            className={`game-nav-button ${selectedGame === 'applegame' ? 'active' : ''}`}
+            onClick={() => setSelectedGame('applegame')}
+          >
+            사과 게임
           </button>
         </nav>
       </header>

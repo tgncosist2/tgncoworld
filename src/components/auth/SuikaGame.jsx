@@ -33,7 +33,6 @@ export default function SuikaGame() {
     const engineRef = useRef(null);
     const runnerRef = useRef(null);
     const renderRef = useRef(null);
-    const mouseConstraintRef = useRef(null);
     const gameOverTimeoutRef = useRef(null);
     const lastDroppedFruitIdRef = useRef(null); // 마지막 드롭된 과일 ID 저장용 Ref
     const safetyDropTimerRef = useRef(null); // 안전 드롭 타이머 ID 저장
@@ -129,25 +128,6 @@ export default function SuikaGame() {
         const rightWall = Matter.Bodies.rectangle(CANVAS_WIDTH + WALL_THICKNESS / 2, CANVAS_HEIGHT / 2, WALL_THICKNESS, CANVAS_HEIGHT, { isStatic: true, label: 'wall' });
         Matter.Composite.add(engine.world, [ground, leftWall, rightWall]);
 
-        // --- 마우스 컨트롤 --- 
-        // 이전 MouseConstraint 정리 시도 (Strict Mode 대비)
-        if (mouseConstraintRef.current) {
-            Matter.Composite.remove(engine.world, mouseConstraintRef.current); // 이전 엔진에서 제거
-            if (mouseConstraintRef.current.mouse) {
-                 Matter.Mouse.clearSourceEvents(mouseConstraintRef.current.mouse); // 중요: 이벤트 리스너 제거
-            }
-        }
-        const mouse = Matter.Mouse.create(render.canvas);
-        const mouseConstraint = Matter.MouseConstraint.create(engine, {
-            mouse: mouse,
-            constraint: {
-                stiffness: 0.2,
-                render: { visible: false }
-            }
-        });
-        mouseConstraintRef.current = mouseConstraint; // ref 업데이트
-        Matter.Composite.add(engine.world, mouseConstraint); // 새 엔진에 추가
-
         // --- 초기 과일 설정 ---
         setNextFruitIndex(Math.floor(Math.random() * 5));
 
@@ -230,26 +210,9 @@ export default function SuikaGame() {
                 console.log('[Effect Cleanup] Removed event listeners.');
             }
 
-             // 3. 마우스 제약 조건 및 이벤트 제거
-            if (mouseConstraintRef.current) {
-                 if (engineRef.current) {
-                     Matter.Composite.remove(engineRef.current.world, mouseConstraintRef.current);
-                     console.log('[Effect Cleanup] Removed mouse constraint from world.');
-                 }
-                 if (mouseConstraintRef.current.mouse) {
-                    Matter.Mouse.clearSourceEvents(mouseConstraintRef.current.mouse);
-                     console.log('[Effect Cleanup] Cleared mouse source events.');
-                 }
-                 mouseConstraintRef.current = null; // ref 초기화
-            }
-
             // 4. 렌더러, 러너 중지
             if (renderRef.current) {
                 Matter.Render.stop(renderRef.current);
-                // 캔버스 제거 시도 (렌더러가 관리하므로 직접 제거는 불필요할 수 있음)
-                // if (renderRef.current.canvas) {
-                //     renderRef.current.canvas.remove();
-                // }
                  console.log('[Effect Cleanup] Stopped Matter Render.');
                  renderRef.current = null;
             }
@@ -538,7 +501,7 @@ export default function SuikaGame() {
                         <span>다음:</span>
                         <div className="next-fruit-preview" style={nextFruitStyle}></div>
                     </div>
-                    <span>최고: {highScore}</span>
+                    <span>최고 점수: {highScore}</span>
                 </div>
                 <div className="canvas-wrapper">
                     <canvas ref={canvasRef} className="game-canvas" />
