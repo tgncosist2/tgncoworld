@@ -1,7 +1,3 @@
-.apple-game-component {
-  /* Optional: Add styles for the root component if needed */
-}
-
 .apple-game-component .game-container {
   display: flex;
   justify-content: center;
