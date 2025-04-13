@@ -1,6 +1,6 @@
 .flappy-container {
   min-height: 100vh;
-  padding: 1rem;
+  padding: 0rem;
   background-color: #2C2C2C;
   display: flex;
   flex-direction: column;

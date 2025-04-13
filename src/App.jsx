@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
 import FlappyBirdGamePage from './pages/FlappyBirdGamePage';
-import WatermelonGamePage from './pages/WatermelonGamePage';
 import MainPage from './pages/MainPage';
 import MobileMainPage from './pages/MobileMainPage';
 import RankingPage from './pages/RankingPage';
@@ -113,10 +112,6 @@ function App() {
         <Route 
           path="/flappybird" 
           element={isAuthenticated ? <FlappyBirdGamePage /> : <Navigate to="/" replace />} 
-        />
-        <Route 
-          path="/watermelon" 
-          element={isAuthenticated ? <WatermelonGamePage /> : <Navigate to="/" replace />} 
         />
       </Routes>
     </Router>
