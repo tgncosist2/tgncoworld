@@ -169,11 +169,14 @@ export default function TetrisGame() {
             isGameOver = true; break;
           }
           if (boardY < ROWS && boardX >= 0 && boardX < COLS) {
-            if (newBoard[boardY]?.[boardX] !== 0) { // Collision during merge (shouldn't happen)
-              isGameOver = true; break;
+            if (newBoard[boardY]?.[boardX] !== 0) { // Collision during merge (shouldn't happen with validMove checks)
+              // This might still happen in rare edge cases or if validMove logic has flaws
+              console.warn("Collision detected during merge, potential issue?");
+              isGameOver = true; // Treat this as game over
+              break;
             }
             newBoard[boardY][boardX] = piece.shape;
-          } // Ignore parts outside L/R bounds
+          } // Ignore parts outside L/R bounds if necessary (should be prevented by validMove)
         }
       }
       if (isGameOver) break;
@@ -183,51 +186,68 @@ export default function TetrisGame() {
       setGameOver(true);
       setIsRunning(false);
       console.log("Game Over: Piece locked too high or merge collision.");
+      // Optionally update high score here if needed before stopping
+      updateHighScore(score); // Ensure high score check happens on game over
       return null; // Indicate failure
     } else {
       setBoard(newBoard);
       return newBoard; // Return updated board for line clearing
     }
-  }, [piece, position, board]); // Depends on piece and board state
+  }, [piece, position, board, score, updateHighScore]); // Added score, updateHighScore
 
   const clearLines = useCallback((boardAfterMerge) => {
     // Clears completed lines from the board
     if (!boardAfterMerge) return 0;
     let linesClearedCount = 0;
+    // Filter out full rows
     const newBoard = boardAfterMerge.filter(row => !row.every(cell => cell !== 0));
     linesClearedCount = ROWS - newBoard.length;
 
     if (linesClearedCount > 0) {
-      const emptyRows = Array.from({ length: linesClearedCount }, () => Array(COLS).fill(0));
-      const finalBoard = [...emptyRows, ...newBoard];
-      setBoard(finalBoard);
+        console.log(`Clearing ${linesClearedCount} lines.`); // DEBUG
+        // Add empty rows at the top
+        const emptyRows = Array.from({ length: linesClearedCount }, () => Array(COLS).fill(0));
+        const finalBoard = [...emptyRows, ...newBoard];
+        setBoard(finalBoard); // Update the board state
 
-      const newLines = lines + linesClearedCount;
-      setLines(newLines);
+        const newLines = lines + linesClearedCount;
+        setLines(newLines);
 
-      let points = 0;
-      switch (linesClearedCount) {
-        case 1: points = 40 * level; break;
-        case 2: points = 100 * level; break;
-        case 3: points = 300 * level; break;
-        case 4: points = 1200 * level; break;
-        default: points = 0;
-      }
-      const newScore = score + points;
-      setScore(newScore);
+        // Calculate points based on lines cleared and level
+        let points = 0;
+        switch (linesClearedCount) {
+            case 1: points = 40 * level; break;
+            case 2: points = 100 * level; break;
+            case 3: points = 300 * level; break;
+            case 4: points = 1200 * level; break; // Tetris!
+            default: points = 0;
+        }
+        const newScore = score + points;
+        setScore(newScore); // Update score state
 
-      const newLevel = Math.floor(newLines / 10) + 1;
-      if (newLevel !== level) setLevel(newLevel);
+        // Update level based on total lines cleared
+        const newLevel = Math.floor(newLines / 10) + 1;
+        if (newLevel !== level) {
+            console.log(`Level up to ${newLevel}`); // DEBUG
+            setLevel(newLevel); // Update level state
+        }
 
-      // Update high score check is now separate
-      // updateHighScore(newScore); // Call this outside or ensure it's safe here
-      // Safest: Check high score after state updates settle
-      if (newScore > highScore) {
-          updateHighScore(newScore);
-      }
+        // Check and update high score
+        // console.log(`Checking high score: New Score ${newScore} vs High Score ${highScore}`); // DEBUG
+        if (newScore > highScore) {
+            // console.log("New high score detected!"); // DEBUG
+            updateHighScore(newScore);
+        }
+    } else {
+        // If no lines were cleared, still need to set the merged board state
+        // (if mergePiece returned it but didn't trigger line clear)
+        // This case might be redundant if mergePiece always calls setBoard? Check logic.
+        // If mergePiece only returns the board and doesn't set state itself, this is needed:
+        // setBoard(boardAfterMerge);
     }
     return linesClearedCount;
-  }, [lines, level, score, highScore, updateHighScore]);
+  }, [lines, level, score, highScore, updateHighScore]); // Dependencies updated
+
 
   const rotate = useCallback((matrix) => {
     // Simple 90-degree clockwise rotation
@@ -235,11 +255,15 @@ export default function TetrisGame() {
     const N = matrix.length;
     // This simple rotation works best for matrices where N === M
     // For non-square, more complex logic is needed
-    const M = matrix[0].length;
+    // Ensure we handle potentially non-square matrices from SHAPES
+    const M = matrix[0]?.length ?? 0; // Get width from first row, default 0
+     if (M === 0) return matrix; // Handle empty matrix case
+
     const rotated = Array(M).fill(null).map(() => Array(N).fill(0));
     for (let y = 0; y < N; y++) {
       for (let x = 0; x < M; x++) {
-        rotated[x][N - 1 - y] = matrix[y][x];
+        // Correct rotation logic: rotated[x][N - 1 - y] = matrix[y][x];
+         rotated[x][N - 1 - y] = matrix[y][x];
       }
     }
     return rotated;
@@ -247,107 +271,223 @@ export default function TetrisGame() {
 
   // --- Movement Functions ---
   const spawnNewPiece = useCallback(() => {
-    // Handles spawning the next piece
+    console.log("Attempting spawnNewPiece..."); // DEBUG
     const newPiece = nextPiece || createPiece(); // Use queued piece or create
-    const initialX = Math.floor(COLS / 2) - Math.floor(newPiece.matrix[0]?.length / 2 || 0);
-    const initialPos = { x: initialX, y: 0 }; // Spawn at top-center
+    // Center the piece horizontally based on its actual matrix width
+    const pieceWidth = newPiece.matrix[0]?.length ?? 0;
+    const initialX = Math.floor(COLS / 2) - Math.floor(pieceWidth / 2);
+    // Start piece potentially slightly above the visible board (y=0 or y=-1 etc.)
+    // Let's try y=0 for simplicity first. If pieces clip top, adjust initial y.
+    const initialY = 0; // Start at the very top row
+    const initialPos = { x: initialX, y: initialY };
+
+    console.log("Spawning piece:", newPiece.shape, "at", initialPos); // DEBUG
 
     // Use the *current* board state for the spawn check
     if (!validMove(newPiece, initialPos, board)) {
-      setGameOver(true);
-      setIsRunning(false);
-      setPiece(newPiece); // Show the piece that caused game over
-      setPosition(initialPos);
-      console.log("Game Over: Cannot spawn new piece.");
+        console.warn("Game Over: Cannot spawn new piece at initial position."); // DEBUG
+        setGameOver(true);
+        setIsRunning(false);
+        // Update high score one last time before stopping
+        updateHighScore(score);
+        // Still set the piece and position so it might be briefly visible where it failed
+        setPiece(newPiece);
+        setPosition(initialPos);
     } else {
-      setPiece(newPiece);
-      setPosition(initialPos);
+        console.log("Spawn successful."); // DEBUG
+        setPiece(newPiece);
+        setPosition(initialPos);
+        // Generate the *next* piece for the preview
+        setNextPiece(createPiece());
+        // Reset drop timer for the new piece only after successful spawn
+        dropCounterRef.current = 0;
     }
-    setNextPiece(createPiece()); // Generate the *next* next piece
-    dropCounterRef.current = 0; // Reset drop timer for the new piece
 
-  }, [nextPiece, board, validMove]); // Depends on nextPiece and board state
+  }, [nextPiece, board, validMove, score, updateHighScore]); // Added score, updateHighScore dependencies
+
 
   const moveDown = useCallback(() => {
-    console.log("Attempting moveDown..."); // DEBUG
+    // console.log("Attempting moveDown..."); // DEBUG
     if (!piece || gameOver || !isRunning) {
-        console.log("MoveDown aborted: State check failed (!piece/gameOver/!isRunning)"); // DEBUG
+        // console.log("MoveDown aborted: State check failed (!piece/gameOver/!isRunning)"); // DEBUG
         return false;
     }
 
     const newPos = { ...position, y: position.y + 1 };
 
     if (validMove(piece, newPos, board)) {
-      console.log("MoveDown successful, new pos:", newPos); // DEBUG
+      // console.log("MoveDown successful, new pos:", newPos); // DEBUG
       setPosition(newPos);
       return true; // Move successful
     } else {
-      console.log("MoveDown invalid (locking piece)..."); // DEBUG
+      // console.log("MoveDown invalid (locking piece)..."); // DEBUG
       // Cannot move down: Lock piece, clear lines, spawn next
       const boardAfterMerge = mergePiece();
-      if (boardAfterMerge !== null) { // Check if merge caused game over
-        clearLines(boardAfterMerge);
-        spawnNewPiece(); // Spawn the next piece
+      if (boardAfterMerge !== null && !gameOver) { // Check merge didn't cause game over
+          clearLines(boardAfterMerge);
+          spawnNewPiece(); // Spawn the next piece
+      } else if (gameOver) {
+          // If mergePiece itself set gameOver, ensure loop stops etc.
+          console.log("Game Over triggered by mergePiece.");
+          // updateHighScore(score); // updateHighScore is now called within mergePiece on game over
       }
-      // Else: mergePiece already set gameOver and stopped running state
+      // Reset drop counter regardless of lock/game over, as the piece action is complete
+      dropCounterRef.current = 0;
       return false; // Move failed (piece locked or game over)
     }
-  }, [piece, position, board, gameOver, isRunning, validMove, mergePiece, clearLines, spawnNewPiece]);
+  }, [piece, position, board, gameOver, isRunning, validMove, mergePiece, clearLines, spawnNewPiece]); // score/updateHighScore removed, handled downstream
+
 
   const moveLeft = useCallback(() => {
-    console.log("Attempting moveLeft..."); // DEBUG
+    // console.log("Attempting moveLeft..."); // DEBUG
     if (gameOver || !isRunning || !piece) {
-        console.log("MoveLeft aborted: State check failed (gameOver/!isRunning/!piece)"); // DEBUG
+        // console.log("MoveLeft aborted: State check failed (gameOver/!isRunning/!piece)"); // DEBUG
         return;
     }
     const newPos = { ...position, x: position.x - 1 };
     if (validMove(piece, newPos, board)) {
-        console.log("MoveLeft successful, new pos:", newPos); // DEBUG
+        // console.log("MoveLeft successful, new pos:", newPos); // DEBUG
         setPosition(newPos);
     } else {
-         console.log("MoveLeft invalid."); // DEBUG
+        // console.log("MoveLeft invalid."); // DEBUG
     }
   }, [gameOver, isRunning, piece, position, board, validMove]);
 
   const moveRight = useCallback(() => {
-    console.log("Attempting moveRight..."); // DEBUG
+    // console.log("Attempting moveRight..."); // DEBUG
     if (gameOver || !isRunning || !piece) {
-        console.log("MoveRight aborted: State check failed (gameOver/!isRunning/!piece)"); // DEBUG
+        // console.log("MoveRight aborted: State check failed (gameOver/!isRunning/!piece)"); // DEBUG
         return;
     }
     const newPos = { ...position, x: position.x + 1 };
     if (validMove(piece, newPos, board)) {
-        console.log("MoveRight successful, new pos:", newPos); // DEBUG
+        // console.log("MoveRight successful, new pos:", newPos); // DEBUG
         setPosition(newPos);
     } else {
-        console.log("MoveRight invalid."); // DEBUG
+        // console.log("MoveRight invalid."); // DEBUG
     }
   }, [gameOver, isRunning, piece, position, board, validMove]);
 
   const rotatePiece = useCallback(() => {
-    console.log("Attempting rotatePiece..."); // DEBUG
+    // console.log("Attempting rotatePiece..."); // DEBUG
     if (!piece || gameOver || !isRunning) {
-        console.log("Rotate aborted: State check failed (!piece/gameOver/!isRunning)"); // DEBUG
+        // console.log("Rotate aborted: State check failed (!piece/gameOver/!isRunning)"); // DEBUG
         return;
     }
+    // O-block (shape 4) doesn't rotate
     if (piece.shape === 4) {
-        console.log("Rotate aborted: O-block"); // DEBUG
+        // console.log("Rotate aborted: O-block"); // DEBUG
         return;
-    } // O-block doesn't rotate
+    }
 
     const rotatedMatrix = rotate(piece.matrix);
     const rotatedPiece = { ...piece, matrix: rotatedMatrix };
 
-    const kicks = [ { x: 0, y: 0 }, { x: 1, y: 0 }, { x: -1, y: 0 }, { x: 2, y: 0 }, { x: -2, y: 0 }, { x: 0, y: -1 } ];
+    // Simple Wall Kick Simulation (Basic) - Check current pos, then +/- 1 horizontally
+    // More complex SRS (Super Rotation System) kicks could be implemented
+    const kicks = [
+        { x: 0, y: 0 },  // 1. Try original position
+        { x: 1, y: 0 },  // 2. Try one step right
+        { x: -1, y: 0 }, // 3. Try one step left
+        { x: 2, y: 0 },  // 4. Try two steps right (for I-piece etc.)
+        { x: -2, y: 0 }, // 5. Try two steps left (for I-piece etc.)
+        // Optional: Add vertical kicks if needed, e.g., { x: 0, y: -1 } for floor kicks
+    ];
+
     for (const kick of kicks) {
       const testPos = { x: position.x + kick.x, y: position.y + kick.y };
       if (validMove(rotatedPiece, testPos, board)) {
-        console.log("Rotate successful, new piece/pos:", rotatedPiece, testPos); // DEBUG
-        setPiece(rotatedPiece); setPosition(testPos); return;
+        // console.log("Rotate successful with kick:", kick, "New pos:", testPos); // DEBUG
+        setPiece(rotatedPiece);
+        setPosition(testPos);
+        return; // Rotation successful
       }
     }
-     console.log("Rotate invalid."); // DEBUG
+     // console.log("Rotate invalid after checking kicks."); // DEBUG
   }, [piece, position, board, gameOver, isRunning, rotate, validMove]);
+
+
+  // --- Hard Drop ---
+  const hardDrop = useCallback(() => {
+    console.log("Attempting hardDrop..."); // DEBUG
+    if (!piece || gameOver || !isRunning) {
+        console.log("HardDrop aborted: State check failed (!piece/gameOver/!isRunning)"); // DEBUG
+        return;
+    }
+
+    let currentY = position.y;
+    // Find the lowest valid position by checking downwards
+    while (validMove(piece, { ...position, y: currentY + 1 }, board)) {
+        currentY++;
+    }
+
+    // Only proceed if the drop position is different from the current position
+    if (currentY > position.y) {
+        console.log(`Hard dropping to y: ${currentY}`); // DEBUG
+        const finalPos = { ...position, y: currentY };
+        setPosition(finalPos); // Set the final position immediately
+
+        // Now, use a slight delay or ensure state updates before merging,
+        // or directly use finalPos in merge logic if mergePiece could accept it.
+        // Simplest: Rely on state update then call standard lock sequence.
+        // Need to ensure mergePiece uses the *updated* position.
+        // Let's directly call the sequence functions. mergePiece uses `position` state,
+        // so we *must* ensure setPosition has rendered before mergePiece is called effectively.
+        // This can be tricky. A safer way is to pass finalPos directly to merge/clear/spawn logic.
+        // Let's refactor mergePiece slightly or create a specific lock sequence function.
+
+        // --- Refined approach: Lock sequence using calculated final position ---
+        // 1. Create a temporary piece object with the final position (conceptually)
+        // 2. Merge this conceptual piece onto the board
+        let tempBoard = board.map(row => [...row]);
+        let isGameOver = false;
+        const matrix = piece.matrix;
+        for (let y = 0; y < matrix.length; y++) {
+          for (let x = 0; x < matrix[y].length; x++) {
+            if (matrix[y][x] !== 0) {
+              const boardY = finalPos.y + y; // Use finalPos.y
+              const boardX = finalPos.x + x; // Use finalPos.x (doesn't change in hard drop)
+              if (boardY < 0) { isGameOver = true; break; }
+              if (boardY < ROWS && boardX >= 0 && boardX < COLS) {
+                 if (tempBoard[boardY]?.[boardX] !== 0) { isGameOver = true; break; }
+                 tempBoard[boardY][boardX] = piece.shape;
+              }
+            }
+          }
+          if (isGameOver) break;
+        }
+
+        if (isGameOver) {
+             console.warn("Game Over triggered during hard drop merge calculation.");
+             setGameOver(true);
+             setIsRunning(false);
+             updateHighScore(score);
+        } else {
+             // 3. Update the board state with the merged result
+             setBoard(tempBoard);
+             // 4. Clear lines based on the updated board
+             clearLines(tempBoard); // clearLines reads the board state, but we pass the result directly
+             // 5. Spawn the next piece
+             spawnNewPiece();
+             // 6. Reset drop counter
+             dropCounterRef.current = 0;
+        }
+        // --- End Refined approach ---
+
+    } else {
+        // If currentY === position.y, it means the piece is already resting on something.
+        // Treat this like a normal lock (e.g., pressing down when already grounded)
+        console.log("HardDrop essentially locking piece in place."); // DEBUG
+        const boardAfterMerge = mergePiece(); // Use standard merge which uses current position
+        if (boardAfterMerge !== null && !gameOver) {
+            clearLines(boardAfterMerge);
+            spawnNewPiece();
+        }
+        dropCounterRef.current = 0;
+    }
+
+  }, [piece, position, board, gameOver, isRunning, validMove, mergePiece, clearLines, spawnNewPiece, score, updateHighScore]); // Added dependencies
+
 
   // --- Drawing Effects ---
 
@@ -366,18 +506,41 @@ export default function TetrisGame() {
         ctx.scale(scale, scale);
     }
 
-    ctx.fillStyle = '#000';
+    // Draw background
+    ctx.fillStyle = '#000'; // Black background
     ctx.fillRect(0, 0, width, height);
 
+    // Draw grid (optional, for better visibility)
+    ctx.strokeStyle = '#222'; // Dark grey grid lines
+    ctx.lineWidth = 0.5;
+    for (let x = 0; x <= COLS; x++) {
+        ctx.beginPath();
+        ctx.moveTo(x * BLOCK_SIZE, 0);
+        ctx.lineTo(x * BLOCK_SIZE, height);
+        ctx.stroke();
+    }
+    for (let y = 0; y <= ROWS; y++) {
+        ctx.beginPath();
+        ctx.moveTo(0, y * BLOCK_SIZE);
+        ctx.lineTo(width, y * BLOCK_SIZE);
+        ctx.stroke();
+    }
+
+
+    // Draw settled blocks
     board.forEach((row, y) => {
       row.forEach((value, x) => {
         if (value !== 0) {
           ctx.fillStyle = COLORS[value];
           ctx.fillRect(x * BLOCK_SIZE + 1, y * BLOCK_SIZE + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
+          // Add a subtle border or bevel effect (optional)
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+          ctx.strokeRect(x * BLOCK_SIZE + 1, y * BLOCK_SIZE + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
         }
       });
     });
 
+    // Draw the current falling piece
     if (piece && isRunning && !gameOver) {
         const matrix = piece.matrix;
         ctx.fillStyle = piece.color;
@@ -386,14 +549,19 @@ export default function TetrisGame() {
                 if (value !== 0) {
                     const drawX = (position.x + x) * BLOCK_SIZE + 1;
                     const drawY = (position.y + y) * BLOCK_SIZE + 1;
-                    if (drawY < height && drawX + BLOCK_SIZE > 0 && drawX < width) {
+                    // Only draw parts of the piece that are within the board's visible area
+                    if (drawY < height && drawY + BLOCK_SIZE > 0 && drawX < width && drawX + BLOCK_SIZE > 0) {
                        ctx.fillRect(drawX, drawY, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
+                       // Optional: border for falling piece
+                       ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+                       ctx.strokeRect(drawX, drawY, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
                     }
                 }
             });
         });
     }
-  }, [board, piece, position, isRunning, gameOver]);
+  }, [board, piece, position, isRunning, gameOver]); // Dependencies are correct
+
 
   // Next Piece Canvas Drawing
   useEffect(() => {
@@ -402,41 +570,54 @@ export default function TetrisGame() {
     const canvas = nextPieceCanvasRef.current;
     const ctx = canvas.getContext('2d');
     const matrix = nextPiece.matrix;
+    const color = nextPiece.color;
 
-    // Ensure canvas size is correct
-    if (canvas.width !== PREVIEW_CANVAS_SIZE || canvas.height !== PREVIEW_CANVAS_SIZE) {
-        canvas.width = PREVIEW_CANVAS_SIZE;
-        canvas.height = PREVIEW_CANVAS_SIZE;
+    // Dynamically calculate required canvas size based on piece matrix dimensions
+    const pieceHeight = matrix.length;
+    const pieceWidth = matrix[0]?.length ?? 0;
+    const requiredWidth = pieceWidth * PREVIEW_BLOCK_SIZE + 4; // Add padding
+    const requiredHeight = pieceHeight * PREVIEW_BLOCK_SIZE + 4; // Add padding
+    const canvasSize = Math.max(requiredWidth, requiredHeight, PREVIEW_CANVAS_SIZE); // Ensure minimum size
+
+    // Resize canvas if needed
+    if (canvas.width !== canvasSize || canvas.height !== canvasSize) {
+        canvas.width = canvasSize;
+        canvas.height = canvasSize;
     }
 
     // Clear and set background
-    ctx.fillStyle = '#333';
+    ctx.fillStyle = '#333'; // Dark background for preview
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Center and draw the piece
-    ctx.fillStyle = nextPiece.color;
-    const pieceHeight = matrix.length;
-    const pieceWidth = matrix[0]?.length ?? 0;
-    const matrixBlockSize = PREVIEW_BLOCK_SIZE;
-    // Calculate centering offset based on actual piece dimensions vs canvas size
-    const totalPieceWidth = pieceWidth * matrixBlockSize;
-    const totalPieceHeight = pieceHeight * matrixBlockSize;
-    const offsetX = Math.floor((PREVIEW_CANVAS_SIZE - totalPieceWidth) / 2);
-    const offsetY = Math.floor((PREVIEW_CANVAS_SIZE - totalPieceHeight) / 2);
+    // Calculate centering offset
+    const totalPieceWidthPixels = pieceWidth * PREVIEW_BLOCK_SIZE;
+    const totalPieceHeightPixels = pieceHeight * PREVIEW_BLOCK_SIZE;
+    const offsetX = Math.floor((canvas.width - totalPieceWidthPixels) / 2);
+    const offsetY = Math.floor((canvas.height - totalPieceHeightPixels) / 2);
 
+    // Draw the piece blocks
+    ctx.fillStyle = color;
     matrix.forEach((row, y) => {
       row.forEach((value, x) => {
         if (value !== 0) {
           ctx.fillRect(
-            offsetX + x * matrixBlockSize + 1,
-            offsetY + y * matrixBlockSize + 1,
-            matrixBlockSize - 2,
-            matrixBlockSize - 2
+            offsetX + x * PREVIEW_BLOCK_SIZE + 1,
+            offsetY + y * PREVIEW_BLOCK_SIZE + 1,
+            PREVIEW_BLOCK_SIZE - 2,
+            PREVIEW_BLOCK_SIZE - 2
+          );
+          // Optional: add border to preview blocks
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+          ctx.strokeRect(
+            offsetX + x * PREVIEW_BLOCK_SIZE + 1,
+            offsetY + y * PREVIEW_BLOCK_SIZE + 1,
+            PREVIEW_BLOCK_SIZE - 2,
+            PREVIEW_BLOCK_SIZE - 2
           );
         }
       });
     });
-  }, [nextPiece]);
+  }, [nextPiece]); // Dependency is correct
 
   // --- Game Loop (requestAnimationFrame) ---
 
@@ -451,54 +632,41 @@ export default function TetrisGame() {
 
     // Calculate deltaTime
     if (lastTimeRef.current === 0) {
-        // Initialize on the first frame *after* starting/resuming
-        // console.log("Initializing loop timer.");
         lastTimeRef.current = timestamp;
     }
     const deltaTime = timestamp - lastTimeRef.current;
     lastTimeRef.current = timestamp;
 
-    // --- Automatic Drop Logic ---
-    // Fixed drop interval of 1000ms (1 second) as requested
-    const dropInterval = 1000;
+    // Automatic Drop Logic based on level
+    const baseSpeed = 1000; // Milliseconds for level 1 drop
+    const speedIncreaseFactor = 0.65; // Multiplier per level (faster)
+    const minSpeed = 100; // Minimum drop interval in ms
+    const dropInterval = Math.max(minSpeed, baseSpeed * Math.pow(speedIncreaseFactor, level - 1));
 
-    /* // Original level-based speed calculation (commented out)
-    const baseSpeed = 1000;
-    const speedIncrease = 50;
-    const minSpeed = 100;
-    const dropInterval = Math.max(minSpeed, baseSpeed - (level - 1) * speedIncrease);
-    */
 
-    // Accumulate time towards the next drop
     dropCounterRef.current += deltaTime;
 
-    // Check if enough time has passed to trigger an auto-drop
     if (dropCounterRef.current >= dropInterval) {
-        // Attempt to move the piece down
         if (moveDown()) {
-            // If moveDown was successful (piece didn't lock), reset counter based on interval
-            dropCounterRef.current %= dropInterval; // Use modulo for smoother recovery from lag
+             // Reset counter using modulo for smoother recovery from lag/long frames
+            dropCounterRef.current %= dropInterval;
         } else {
-            // If moveDown failed (piece locked or game over), the moveDown function
-            // already resets the counter or stops the game.
-            // No need to reset counter here in that case.
+            // If moveDown failed (locked or game over), it already reset the counter or stopped the game.
+             // No need to reset counter here.
         }
     }
-    // --- End Automatic Drop Logic ---
 
     // Continue the loop
-    // Ensure we only request next frame if loop should still be running
     if (isRunning && !gameOver) {
         requestRef.current = requestAnimationFrame(gameLoop);
     } else {
-        // Clean up if state changed during this frame execution
          if (requestRef.current) {
             cancelAnimationFrame(requestRef.current);
             requestRef.current = null;
         }
     }
 
-  }, [isRunning, gameOver, level, moveDown]); // Keep level in deps if speed might depend on it later
+  }, [isRunning, gameOver, level, moveDown]); // Keep level in deps
 
 
   // Effect to manage the game loop lifecycle
@@ -506,25 +674,19 @@ export default function TetrisGame() {
       // Handle initial piece spawn when game becomes active and no piece exists
       if (isRunning && !piece && !gameOver) {
           console.log("Spawning initial piece via useEffect...");
-          spawnNewPiece(); // This function now handles setting piece, position, nextPiece
-          // Reset timer refs when the first piece spawns
-          lastTimeRef.current = 0;
-          dropCounterRef.current = 0;
+          spawnNewPiece(); // Handles setting piece, position, nextPiece, and initial dropCounter reset
+          lastTimeRef.current = 0; // Reset loop timer ref
       }
 
       // Start/stop the loop based on isRunning and gameOver
-      // Ensure a piece exists before starting the loop
       if (isRunning && !gameOver && piece) {
-          // Start the loop only if it's not already running
           if (!requestRef.current) {
              console.log("Starting game loop via useEffect...");
-             // Reset time reference *before* starting the loop for accurate first delta
-             lastTimeRef.current = 0;
+             lastTimeRef.current = 0; // Reset time reference *before* starting
              requestRef.current = requestAnimationFrame(gameLoop);
-             // console.log("Game loop started with request ID:", requestRef.current);
           }
       } else {
-        // Stop the loop if paused, game over, or no piece exists
+        // Stop the loop if paused, game over, or no piece exists yet
         if (requestRef.current) {
           cancelAnimationFrame(requestRef.current);
           requestRef.current = null;
@@ -532,210 +694,295 @@ export default function TetrisGame() {
         }
       }
 
-      // Cleanup function: Cancel animation frame on unmount or when effect re-runs
+      // Cleanup function
       return () => {
         if (requestRef.current) {
           cancelAnimationFrame(requestRef.current);
           console.log("Game loop cleaned up via useEffect return:", requestRef.current);
-          requestRef.current = null; // Clear the ref on cleanup
+          requestRef.current = null;
         }
       };
-    // Dependencies: run when game starts/stops, on game over, or when the initial piece is set.
-    // `gameLoop` and `spawnNewPiece` included as they are called by the effect.
-  }, [isRunning, gameOver, piece, gameLoop, spawnNewPiece]);
+  }, [isRunning, gameOver, piece, gameLoop, spawnNewPiece]); // Dependencies updated
 
-  // --- Keyboard Input Effect (Space bar case removed) ---
+
+  // --- Keyboard Input Effect (Space bar added for Hard Drop) ---
   useEffect(() => {
     const handleKeyDown = (e) => {
         // Handle Pause toggle first
         if ((e.key === 'p' || e.key === 'P') && !gameOver) {
              e.preventDefault();
              setIsRunning(prev => !prev);
+             console.log("Pause toggled via keydown."); // DEBUG
              return;
         }
         // Ignore other input if paused or game over
         if (!isRunning || gameOver) return;
 
-        // Handle movement/rotation
+        // Handle movement/rotation/drop
         switch (e.key) {
-            case 'ArrowLeft': e.preventDefault(); moveLeft(); break;
-            case 'ArrowRight': e.preventDefault(); moveRight(); break;
-            case 'ArrowUp': e.preventDefault(); rotatePiece(); break;
-            case 'ArrowDown':
+            case 'ArrowLeft':
+                e.preventDefault();
+                moveLeft();
+                break;
+            case 'ArrowRight':
+                e.preventDefault();
+                moveRight();
+                break;
+            case 'ArrowUp': // Typically rotate
+                e.preventDefault();
+                rotatePiece();
+                break;
+            case 'ArrowDown': // Soft drop
                 e.preventDefault();
                 if (moveDown()) { // Attempt soft drop
                     dropCounterRef.current = 0; // Reset auto-drop timer if successful
                 }
                 break;
-            // Space bar case (' ') fully removed
+            case ' ': // Space bar for Hard Drop
+                e.preventDefault();
+                hardDrop();
+                break;
             default: break;
         }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-    // Dependencies no longer include hardDrop
-  }, [isRunning, gameOver, moveLeft, moveRight, rotatePiece, moveDown]);
+  }, [isRunning, gameOver, moveLeft, moveRight, rotatePiece, moveDown, hardDrop, setIsRunning]); // Added hardDrop, setIsRunning
+
 
   // --- Game Reset ---
   const resetGame = useCallback(() => {
     console.log("Resetting game...");
 
+    // Stop any existing game loop
     if (requestRef.current) {
         cancelAnimationFrame(requestRef.current);
         requestRef.current = null;
     }
 
+    // Reset all game state variables
     setBoard(createEmptyBoard());
-    setPiece(null);
-    setNextPiece(createPiece());
-    setPosition({ x: 0, y: 0 });
+    setPiece(null); // Will trigger spawn in useEffect when isRunning is true
+    setNextPiece(createPiece()); // Prepare the next piece
+    setPosition({ x: 0, y: 0 }); // Reset position (though spawn will set it)
     setScore(0);
     setLevel(1);
     setLines(0);
-    setNewHighScore(false);
-    setGameOver(false);
+    setNewHighScore(false); // Reset new high score flag
+    setGameOver(false); // Clear game over state
 
+    // Reset timer refs
     lastTimeRef.current = 0;
     dropCounterRef.current = 0;
 
+    // Restart the game - useEffect will handle spawning the first piece
     setIsRunning(true);
 
     console.log("Game reset complete. isRunning:", true);
 
-  }, []);
+  }, [updateHighScore]); // updateHighScore might be needed if score is checked on reset? No, score is 0.
 
-  // --- Mobile Touch Handlers (handleTouchDrop removed) ---
+  // --- Mobile Touch Handlers ---
   const handleTouchRotate = useCallback((e) => {
-      // preventDefault might still be needed depending on exact browser behavior
-      // e.preventDefault();
-      console.log("Canvas Touched - handleTouchRotate");
+      // e.preventDefault(); // Keep if needed to prevent zoom/scroll on canvas tap
       if (isRunning && !gameOver) {
-          console.log("Calling rotatePiece...");
           rotatePiece();
-      } else {
-          console.log("Rotate ignored: isRunning=", isRunning, "gameOver=", gameOver);
       }
-  }, [isRunning, gameOver, rotatePiece]); // Added rotatePiece
+  }, [isRunning, gameOver, rotatePiece]);
 
   const handleTouchLeft = useCallback((e) => {
       // e.preventDefault();
-      console.log("Left Button Touched - handleTouchLeft");
       if (isRunning && !gameOver) {
-           console.log("Calling moveLeft...");
           moveLeft();
-      } else {
-          console.log("Left move ignored: isRunning=", isRunning, "gameOver=", gameOver);
       }
-  }, [isRunning, gameOver, moveLeft]); // Added moveLeft
+  }, [isRunning, gameOver, moveLeft]);
 
   const handleTouchRight = useCallback((e) => {
       // e.preventDefault();
-      console.log("Right Button Touched - handleTouchRight");
       if (isRunning && !gameOver) {
-          console.log("Calling moveRight...");
           moveRight();
-      } else {
-           console.log("Right move ignored: isRunning=", isRunning, "gameOver=", gameOver);
       }
-  }, [isRunning, gameOver, moveRight]); // Added moveRight
+  }, [isRunning, gameOver, moveRight]);
 
    const handleTouchDown = useCallback((e) => {
         // e.preventDefault();
-        console.log("Down Button Touched - handleTouchDown");
         if (isRunning && !gameOver) {
-             console.log("Calling moveDown...");
            if (moveDown()) {
-               dropCounterRef.current = 0;
-               console.log("Soft drop successful, counter reset.");
-           } else {
-                console.log("Soft drop failed (locked or game over).");
+               dropCounterRef.current = 0; // Reset auto-drop on manual down press
            }
-        } else {
-             console.log("Down move ignored: isRunning=", isRunning, "gameOver=", gameOver);
         }
-   }, [isRunning, gameOver, moveDown]); // Added moveDown
+   }, [isRunning, gameOver, moveDown]);
+
+   // Mobile Hard Drop (e.g., tap and hold on down button, or a separate button)
+   // For simplicity, let's add a long press detector to the down button
+   const longPressTimeoutRef = useRef(null);
+
+   const handleTouchDownStart = useCallback((e) => {
+        // e.preventDefault(); // Prevent default only if needed
+        if (isRunning && !gameOver) {
+            // Start a timer for long press (e.g., 500ms)
+            longPressTimeoutRef.current = setTimeout(() => {
+                console.log("Long press detected on Down button - Hard Drop!");
+                hardDrop();
+                longPressTimeoutRef.current = null; // Clear the timeout ref
+            }, 500); // 500ms threshold for long press
+
+            // Also trigger a normal soft drop immediately on touch start
+            if (moveDown()) {
+               dropCounterRef.current = 0;
+            }
+        }
+   }, [isRunning, gameOver, moveDown, hardDrop]);
+
+   const handleTouchDownEnd = useCallback((e) => {
+        // e.preventDefault(); // Prevent default only if needed
+        // Clear the long press timer if finger is lifted before threshold
+        if (longPressTimeoutRef.current) {
+            clearTimeout(longPressTimeoutRef.current);
+            longPressTimeoutRef.current = null;
+        }
+   }, []);
 
 
   // --- Effect for Mobile Touch Event Listeners ---
   useEffect(() => {
-    const options = { passive: false }; // Specify non-passive listeners
+    const options = { passive: false };
 
-    // It's safer to add listener to the canvas itself for rotation
     const gameCanvasElement = canvasRef.current;
     const leftBtn = leftButtonRef.current;
     const rightBtn = rightButtonRef.current;
     const downBtn = downButtonRef.current;
 
-    // Store added listeners to remove them correctly
     const listeners = [];
 
+    // Canvas Tap for Rotate
     if (gameCanvasElement) {
         const rotateHandler = (e) => { e.preventDefault(); handleTouchRotate(e); };
         gameCanvasElement.addEventListener('touchstart', rotateHandler, options);
         listeners.push({ element: gameCanvasElement, type: 'touchstart', handler: rotateHandler });
     }
+    // Left Button Tap
     if (leftBtn) {
         const leftHandler = (e) => { e.preventDefault(); handleTouchLeft(e); };
         leftBtn.addEventListener('touchstart', leftHandler, options);
         listeners.push({ element: leftBtn, type: 'touchstart', handler: leftHandler });
+        // Consider adding touchmove/touchend if continuous move on hold is desired
     }
+    // Right Button Tap
     if (rightBtn) {
         const rightHandler = (e) => { e.preventDefault(); handleTouchRight(e); };
         rightBtn.addEventListener('touchstart', rightHandler, options);
         listeners.push({ element: rightBtn, type: 'touchstart', handler: rightHandler });
     }
+    // Down Button Tap & Hold (for Hard Drop)
     if (downBtn) {
-        const downHandler = (e) => { e.preventDefault(); handleTouchDown(e); };
-        downBtn.addEventListener('touchstart', downHandler, options);
-        listeners.push({ element: downBtn, type: 'touchstart', handler: downHandler });
+        const downStartHandler = (e) => { e.preventDefault(); handleTouchDownStart(e); };
+        const downEndHandler = (e) => { e.preventDefault(); handleTouchDownEnd(e); };
+        downBtn.addEventListener('touchstart', downStartHandler, options);
+        // Add touchend and touchcancel to clear the long press timeout
+        downBtn.addEventListener('touchend', downEndHandler, options);
+        downBtn.addEventListener('touchcancel', downEndHandler, options); // Handle cancelled touches
+        listeners.push({ element: downBtn, type: 'touchstart', handler: downStartHandler });
+        listeners.push({ element: downBtn, type: 'touchend', handler: downEndHandler });
+        listeners.push({ element: downBtn, type: 'touchcancel', handler: downEndHandler });
     }
 
-    // Cleanup function to remove listeners
+    // Cleanup function
     return () => {
+         // Clear any pending long press timeout on unmount/re-render
+         if (longPressTimeoutRef.current) {
+            clearTimeout(longPressTimeoutRef.current);
+         }
         listeners.forEach(({ element, type, handler }) => {
-            element.removeEventListener(type, handler);
+            element.removeEventListener(type, handler, options); // Pass options to removeListener too
         });
     };
-    // Dependencies: Include handler functions. Refs don't need to be dependencies
-    // if the effect runs once on mount and cleans up on unmount.
-    // However, if handlers change due to state changes, include them.
-  }, [handleTouchRotate, handleTouchLeft, handleTouchRight, handleTouchDown]);
+  }, [handleTouchRotate, handleTouchLeft, handleTouchRight, handleTouchDownStart, handleTouchDownEnd]); // Updated dependencies
 
 
   // --- Render JSX ---
    return (
      <div className="tetris-container">
        <div className="game-column">
-         {/* Remove onTouchStart from game-area, listener added to canvas via ref */}
+         {/* Canvas and Overlays */}
          <div className="game-area">
+           {/* Canvas tap listener added via useEffect */}
            <canvas ref={canvasRef} className="game-canvas" />
-            {/* Overlays */}
-            {gameOver && ( <div className="game-over-overlay"><h2>Game Over</h2>{newHighScore && <p className="new-high-score-text">New High Score!</p>}<p>Final Score: {score}</p><button onClick={resetGame} className="reset-button">Play Again</button></div> )}
-            {!isRunning && !gameOver && ( <div className="paused-overlay"><h2>일시정지</h2></div> )}
+            {/* Game Over Overlay */}
+            {gameOver && (
+              <div className="game-over-overlay">
+                <h2>Game Over</h2>
+                {newHighScore && <p className="new-high-score-text">🌟 New High Score! 🌟</p>}
+                <p>Final Score: {score}</p>
+                <button onClick={resetGame} className="reset-button">Play Again</button>
+              </div>
+            )}
+            {/* Paused Overlay */}
+            {!isRunning && !gameOver && (
+              <div className="paused-overlay">
+                <h2>일시정지</h2>
+                <p>(Press 'P' to Resume)</p>
+              </div>
+            )}
          </div>
 
-          {/* Mobile Controls - Add refs, remove onTouchStart */}
+          {/* Mobile Controls - Refs assigned, listeners added via useEffect */}
           <div className="mobile-controls">
-             {/* Assign refs to buttons */}
              <button ref={leftButtonRef} className="control-button left">ᐊ</button>
+             {/* Down button now handles tap (soft drop) and hold (hard drop) */}
              <button ref={downButtonRef} className="control-button down">ᐁ</button>
              <button ref={rightButtonRef} className="control-button right">ᐅ</button>
+             {/* Consider adding a dedicated rotate button for mobile if canvas tap is unreliable */}
+             {/* <button ref={rotateButtonRef} className="control-button rotate">↻</button> */}
           </div>
        </div> {/* End of game-column */}
 
 
        {/* Info Panel */}
        <div className="info-panel">
-          {/* ... Info boxes ... */}
-          <div className="info-box next-piece-box"><h3>Next</h3><canvas ref={nextPieceCanvasRef} className="next-piece-canvas"></canvas></div>
-          <div className="info-box score-box"><h3>Score</h3><p>{score}</p></div>
-          <div className="info-box high-score-box"><h3>High Score</h3><p>{highScore}</p></div>
-          <div className="info-box level-box"><h3>Level</h3><p>{level}</p></div>
-          <div className="info-box lines-box"><h3>Lines</h3><p>{lines}</p></div>
-          {/* Back and Pause buttons */}
-          <button className="back-button" onClick={() => { if (!gameOver) setIsRunning(false); window.location.href = "/main"; }}>메인화면</button>
-          <button className="pause-button" onClick={() => { if (!gameOver) setIsRunning(prev => !prev); }} disabled={gameOver}>{isRunning ? '일시정지' : '재개'}</button>
-       </div>
+          <div className="info-box next-piece-box">
+            <h3>Next</h3>
+            <canvas ref={nextPieceCanvasRef} className="next-piece-canvas"></canvas>
+          </div>
+          <div className="info-box score-box">
+            <h3>Score</h3>
+            <p>{score}</p>
+            {newHighScore && <p className="new-high-score-indicator">🏆</p>}
+          </div>
+          <div className="info-box high-score-box">
+            <h3>High Score</h3>
+            <p>{highScore}</p>
+           </div>
+          <div className="info-box level-box">
+            <h3>Level</h3>
+            <p>{level}</p>
+          </div>
+          <div className="info-box lines-box">
+            <h3>Lines</h3>
+            <p>{lines}</p>
+          </div>
+          {/* Action Buttons */}
+          <div className="action-buttons">
+            <button
+                className="pause-button"
+                onClick={() => { if (!gameOver) setIsRunning(prev => !prev); }}
+                disabled={gameOver}
+            >
+                {isRunning ? '일시정지 (P)' : '재개 (P)'}
+            </button>
+            <button
+                className="back-button"
+                onClick={() => {
+                    // Optionally pause the game before navigating away
+                    if (isRunning) setIsRunning(false);
+                    // Consider using React Router's navigation instead of direct href
+                    window.location.href = "/main"; // Assuming /main is the target route
+                 }}
+            >
+                메인화면
+            </button>
+          </div>
+       </div> {/* End of info-panel */}
      </div>
    );
  }

@@ -478,9 +478,15 @@ export default function SuikaGame() {
     };
 
     // 다음 떨어질 과일 미리보기 스타일
-    const nextFruitStyle = nextFruitIndex >= 0 && FRUITS[nextFruitIndex]
-        ? { backgroundColor: FRUITS[nextFruitIndex].color }
+    const nextFruitData = FRUITS[nextFruitIndex];
+    const nextFruitStyle = nextFruitData
+        ? { backgroundColor: nextFruitData.color }
         : {};
+
+    // ★ 미리보기 크기 계산 (반지름의 1.5배, 최소/최대 크기 제한 추가 가능)
+    const previewRadius = nextFruitData ? nextFruitData.radius : 12; // 기본값 설정
+    // ★ 크기 비율 및 최대 제한 증가
+    const previewSize = Math.max(15, Math.min(40, Math.round(previewRadius * 1.5))); // 비율 1.5, 최대 40px
 
     // ★ 나가기 버튼 핸들러
     const handleExitGame = async () => {
@@ -497,13 +503,36 @@ export default function SuikaGame() {
             <div className="game-area">
                  <div className="info-bar">
                     <span>점수: {score}</span>
-                     <div className="next-fruit-indicator">
-                        <span>다음:</span>
-                        <div className="next-fruit-preview" style={nextFruitStyle}></div>
-                    </div>
                     <span>최고 점수: {highScore}</span>
                 </div>
-                <div className="canvas-wrapper">
+                <div className="canvas-wrapper" style={{ position: 'relative' }}>
+                    <div
+                        className="next-fruit-indicator"
+                        style={{
+                            position: 'absolute',
+                            top: '10px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            zIndex: 10,
+                            display: 'flex',
+                            alignItems: 'center',
+                            backgroundColor: 'lightgray',
+                            padding: '3px 8px',
+                            borderRadius: '5px',
+                            border: '1px solid #ccc'
+                        }}
+                    >
+                        <span style={{ marginRight: '10px', color: 'black', fontStyle: 'bold', fontSize: '18px' }}>다음:</span>
+                        <div
+                            className="next-fruit-preview"
+                            style={{
+                                ...nextFruitStyle,
+                                width: `${previewSize}px`,
+                                height: `${previewSize}px`,
+                                borderRadius: '50%' // 원형 유지
+                            }}
+                         ></div>
+                    </div>
                     <canvas ref={canvasRef} className="game-canvas" />
                      {isGameOver && (
                         <div className="game-over-overlay">
