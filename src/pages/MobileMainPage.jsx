@@ -19,7 +19,7 @@ const MobileMainPage = () => {
   useEffect(() => {
     const intervalId = setInterval(() => {
       setCurrentIndex(prevIndex => (prevIndex + 1) % winnersData.length);
-    }, 3000); // 3초마다 변경
+    }, 2000); // 3초마다 변경
 
     return () => clearInterval(intervalId); // 컴포넌트 언마운트 시 인터벌 제거
   }, [winnersData.length]);
@@ -48,7 +48,7 @@ const MobileMainPage = () => {
       
       {/* Electronic Billboard */}
       <div className="mobile-billboard">
-        <h3 className="billboard-title">시즌 1 명예의 전당</h3>
+        <h3 className="billboard-title">시즌1 명예의 전당</h3>
         <div className="winner-items-container">
           {winnersData.map((winner, index) => (
             <div

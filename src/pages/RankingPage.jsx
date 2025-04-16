@@ -11,7 +11,7 @@ const RankingPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [lastVisible, setLastVisible] = useState(null);
   const [selectedGame, setSelectedGame] = useState('flappybird');
-  const [selectedSeason, setSelectedSeason] = useState(1); // Season 1 is default
+  const [selectedSeason, setSelectedSeason] = useState(2); // Season 2 is default
 
   const gamesConfig = {
     flappybird: {

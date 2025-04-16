@@ -31,7 +31,7 @@ const MainPage = () => {
       <div className="main-body">
         <div className="marquee-container">
           <div className="marquee-content">
-            🏆 시즌 1 명예의 전당 [플래피버드 - <span className="nickname">다이겨</span>] 🏆 [테트리스 - <span className="nickname">캬하하</span>] 🏆 [수박게임 - <span className="nickname">해적</span>] 🏆 [사과게임 - <span className="nickname">준성이옆자리</span>] 🏆
+            🏆 시즌1 명예의 전당 [플래피버드 - <span className="nickname">다이겨</span>] 🏆 [테트리스 - <span className="nickname">캬하하</span>] 🏆 [수박게임 - <span className="nickname">해적</span>] 🏆 [사과게임 - <span className="nickname">준성이옆자리</span>] 🏆
           </div>
         </div>
       </div>
