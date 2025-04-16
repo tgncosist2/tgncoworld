@@ -295,6 +295,7 @@ const AppleGame = () => {
     // Handle Go To Main Menu
     const handleGoToMainClick = () => {
         console.log("Navigating to /main...");
+        updateHighScoreInDb(score); // Update high score before navigating
         navigate('/main'); // Use navigate
     };
 
