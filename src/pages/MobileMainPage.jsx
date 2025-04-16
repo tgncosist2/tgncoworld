@@ -63,15 +63,15 @@ const MobileMainPage = () => {
 
       <div className="mobile-game-container">
         <div className="mobile-game-card" onClick={() => navigate('/flappybird')}>
-          <h2>플래피버드</h2>
+          <h2>🐦 플래피버드</h2>
           <p>클래식한 플래피버드 게임을 즐겨보세요!</p>
         </div>
         <div className="mobile-game-card" onClick={() => navigate('/tetris')}>
-          <h2>테트리스</h2>
+          <h2>🧱 테트리스</h2>
           <p>고전 블록 쌓기 게임, 테트리스!</p>
         </div>
         <div className="mobile-game-card" onClick={() => navigate('/suika')}>
-          <h2>수박 게임</h2>
+          <h2>🍉 수박 게임</h2>
           <p>과일을 합쳐 수박을 만들어보세요!</p>
         </div>
       </div>
