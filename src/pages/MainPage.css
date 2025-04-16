@@ -103,4 +103,38 @@
   transform: translateY(-2px);
   background: linear-gradient(45deg, #ff8e8e, #ff6b6b);
   box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
-} 
+}
+
+/* 전광판 스타일 추가 */
+.main-body {
+  margin-bottom: 3rem; /* 헤더와 게임 컨테이너 사이 여백 */
+}
+
+.marquee-container {
+  background-color: #1a1a1a; /* 전광판 배경색 */
+  color: #ffdd57; /* 텍스트 색상 (금색 느낌) */
+  padding: 0.8rem 0;
+  overflow: hidden; /* 넘치는 텍스트 숨김 */
+  white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.marquee-content {
+  display: inline-block; /* 인라인 블록 요소로 만듦 */
+  padding-left: 100%; /* 시작 위치를 오른쪽 끝으로 */
+  animation: marquee 20s linear infinite; /* 애니메이션 적용 */
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.nickname {
+  color: #61dafb; /* 밝은 청록색으로 닉네임 강조 */
+  margin: 0 0.2em; /* 닉네임 좌우 여백 약간 추가 */
+}
+
+/* 전광판 애니메이션 */
+@keyframes marquee {
+  0%   { transform: translate(0, 0); }
+  100% { transform: translate(-100%, 0); } /* 왼쪽으로 텍스트 길이만큼 이동 */
+}

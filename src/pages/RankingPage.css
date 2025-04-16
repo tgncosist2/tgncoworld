@@ -1,136 +1,196 @@
 .ranking-page {
-  min-height: 100vh;
+  padding: 20px;
   background-color: #2C2C2C;
-  padding: 2rem;
-  color: white;
+  color: #fff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .ranking-header {
-  margin-bottom: 2rem;
   text-align: center;
+  margin-bottom: 30px;
+  width: 100%;
 }
 
 .ranking-header h1 {
-  font-size: 2.5rem;
-  margin-bottom: 1.5rem;
+  font-size: 2.5em;
+  margin-bottom: 20px;
 }
 
-.game-nav {
+/* Season Navigation Styles */
+.season-nav {
+  margin-bottom: 20px;
   display: flex;
   justify-content: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: 15px; /* spacing between season buttons */
+}
+
+.season-nav-button {
+  padding: 10px 20px;
+  font-size: 1.1em;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  background-color: #FFE3EE;
+  color: #000000;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.season-nav-button:hover {
+  background-color: #FFD9E4;
+  color: #000000;
+}
+
+.season-nav-button.active {
+  background-color: #FFAAAF; /* Slightly different active color */
+  color: #000000;
+  font-weight: bold;
+}
+
+/* Game Navigation Styles */
+.game-nav {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 10px; /* spacing between game buttons */
+  flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
 }
 
 .game-nav-button {
-  padding: 0.8rem 1.5rem;
-  font-size: 1.1rem;
-  background: rgba(255, 255, 255, 0.1);
+  padding: 10px 15px;
+  font-size: 1em;
+  cursor: pointer;
   border: none;
   border-radius: 8px;
-  color: white;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  background-color: #555;
+  color: #ccc;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.game-nav-button:hover {
+  background-color: #666;
 }
 
 .game-nav-button.active {
-  background: linear-gradient(45deg, #ff8e8e, #ff6b6b);
+  background-color: #ff6b6b; /* Active color like in the image */
+  color: #fff;
+  font-weight: bold;
 }
 
 .ranking-table {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
+  width: 80%;
+  max-width: 800px;
+  background-color: #444;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  margin-bottom: 30px;
+}
+
+.ranking-table-header,
+.ranking-row {
+  display: grid;
+  grid-template-columns: 1fr 3fr 1.3fr; /* Adjust column ratios */
+  padding: 15px;
+  border-bottom: 1px solid #555;
+  align-items: center;
 }
 
 .ranking-table-header {
-  display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  margin-bottom: 1rem;
+  background-color: #555;
   font-weight: bold;
+  font-size: 1.1em;
+}
+
+.ranking-table-body .ranking-row:last-child {
+  border-bottom: none;
 }
 
 .ranking-row {
-  display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
-  padding: 0.8rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
+  transition: background-color 0.2s;
 }
 
 .ranking-row:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background-color: #4f4f4f;
 }
 
-.top-three {
-  font-size: 1.2rem;
-  font-weight: bold;
-  background: rgba(255, 255, 255, 0.05);
+.ranking-row.top-three {
+  /* Optional: Special styling for top 3 */
+  background-color: #4a4a4a; /* Slightly darker background for top 3 */
+}
+
+.ranking-row.top-three:hover {
+  background-color: #555555; /* Slightly different hover for top 3 */
+}
+
+.rank-column,
+.nickname-column,
+.score-column {
+  text-align: center; /* Center text in columns */
+}
+
+.nickname-column {
+  text-align: center; /* Keep nickname centered too if desired */
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center content within the div */
+  gap: 5px; /* Space between nickname and trophy */
 }
 
 .trophy {
-  margin-left: 0.5rem;
-  font-size: 1.5rem;
-  vertical-align: middle;
+  font-size: 1.2em;
 }
 
-.trophy.gold {
-  color: #FFD700;
-}
-
-.trophy.silver {
-  color: #C0C0C0;
-}
-
-.trophy.bronze {
-  color: #CD7F32;
-}
+.gold { color: gold; }
+.silver { color: silver; }
+.bronze { color: #cd7f32; } /* Bronze color */
 
 .pagination {
+  margin-top: 20px;
   display: flex;
   justify-content: center;
-  gap: 0.5rem;
-  margin-bottom: 2rem;
+  gap: 5px;
+  flex-wrap: wrap;
 }
 
 .page-button {
-  padding: 0.5rem 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  border-radius: 5px;
-  color: white;
+  padding: 8px 12px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  border: 1px solid #666;
+  background-color: #555;
+  color: #ccc;
+  border-radius: 4px;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.page-button:hover {
+  background-color: #666;
+  border-color: #777;
 }
 
 .page-button.active {
-  background: linear-gradient(45deg, #ff8e8e, #ff6b6b);
+  background-color: #ff6b6b;
+  color: #fff;
+  border-color: #ff6b6b;
+  font-weight: bold;
 }
 
 .back-button {
-  display: block;
-  width: 100%;
-  max-width: 300px;
-  margin: 0 auto;
-  padding: 1rem;
-  background: linear-gradient(45deg, #ffffff, #ffffff);
-  color: black;
-  border: none;
-  border-radius: 10px;
-  font-size: 1.1rem;
-  font-weight: 600;
+  margin-top: 30px;
+  padding: 12px 25px;
+  font-size: 1.1em;
   cursor: pointer;
-  transition: all 0.3s ease;
+  border: none;
+  border-radius: 8px;
+  background-color: #ff6b6b; /* Same color as active buttons */
+  color: #fff;
+  transition: background-color 0.3s;
 }
 
 .back-button:hover {
-  background: linear-gradient(45deg, #ff8e8e, #ff6b6b);
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+  background-color: #e05a5a;
 }
 
 @media (max-width: 768px) {

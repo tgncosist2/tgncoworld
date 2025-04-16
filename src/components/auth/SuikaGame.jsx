@@ -52,10 +52,10 @@ export default function SuikaGame() {
                 const userDocRef = doc(db, 'users', user.uid);
                 const userDoc = await getDoc(userDocRef);
                 const data = userDoc.data();
-                if (userDoc.exists() && data && data.suikaHighScore) {
-                    setHighScore(data.suikaHighScore);
+                if (userDoc.exists() && data && data.suikaHighScore_s2) {
+                    setHighScore(data.suikaHighScore_s2);
                 } else {
-                    await setDoc(userDocRef, { suikaHighScore: 0 }, { merge: true });
+                    await setDoc(userDocRef, { suikaHighScore_s2: 0 }, { merge: true });
                 }
             }
         };
@@ -68,7 +68,7 @@ export default function SuikaGame() {
              console.log(`Updating high score. New: ${newScore}, Old: ${highScore}`);
             const userDocRef = doc(db, 'users', user.uid);
             try {
-                await updateDoc(userDocRef, { suikaHighScore: newScore });
+                await updateDoc(userDocRef, { suikaHighScore_s2: newScore });
                 // DB 업데이트 성공 시 로컬 상태도 업데이트
                 setHighScore(newScore);
                 console.log('High score updated successfully!');
@@ -77,7 +77,7 @@ export default function SuikaGame() {
                 // If the document doesn't exist, create it
                 if (error.code === 'not-found') {
                     try {
-                        await setDoc(userDocRef, { suikaHighScore: newScore });
+                        await setDoc(userDocRef, { suikaHighScore_s2: newScore });
                         setHighScore(newScore);
                         console.log('High score document created successfully!');
                     } catch (creationError) {

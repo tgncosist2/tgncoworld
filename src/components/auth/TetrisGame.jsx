@@ -91,15 +91,15 @@ export default function TetrisGame() {
         const userDocRef = doc(db, 'users', user.uid);
         try {
             const userDoc = await getDoc(userDocRef);
-            if (userDoc.exists() && userDoc.data().tetrisHighScore !== undefined) {
-                initialHighScore = userDoc.data().tetrisHighScore;
+            if (userDoc.exists() && userDoc.data().tetrisHighScore_s2 !== undefined) {
+                initialHighScore = userDoc.data().tetrisHighScore_s2;
             } else {
                 // Ensure the field exists if document exists but field doesn't
                  if(userDoc.exists()) {
-                    await setDoc(userDocRef, { tetrisHighScore: 0 }, { merge: true });
+                    await setDoc(userDocRef, { tetrisHighScore_s2: 0 }, { merge: true });
                  } else {
                     // If user doc doesn't exist at all, create it with score
-                     await setDoc(userDocRef, { tetrisHighScore: 0 });
+                     await setDoc(userDocRef, { tetrisHighScore_s2: 0 });
                  }
             }
         } catch (error) {
@@ -124,7 +124,7 @@ export default function TetrisGame() {
         if (user) {
             const userDocRef = doc(db, 'users', user.uid);
             try {
-                await updateDoc(userDocRef, { tetrisHighScore: currentScore });
+                await updateDoc(userDocRef, { tetrisHighScore_s2: currentScore });
                 console.log("Firestore high score updated.");
             } catch (error) {
                 console.error("Error updating Firestore high score:", error);
@@ -512,7 +512,7 @@ export default function TetrisGame() {
 
     // Draw grid (optional, for better visibility)
     ctx.strokeStyle = '#222'; // Dark grey grid lines
-    ctx.lineWidth = 0.5;
+    ctx.lineWidth = 1;
     for (let x = 0; x <= COLS; x++) {
         ctx.beginPath();
         ctx.moveTo(x * BLOCK_SIZE, 0);
@@ -639,7 +639,7 @@ export default function TetrisGame() {
 
     // Automatic Drop Logic based on level
     const baseSpeed = 1000; // Milliseconds for level 1 drop
-    const speedIncreaseFactor = 0.65; // Multiplier per level (faster)
+    const speedIncreaseFactor = 0.75; // Multiplier per level (faster)
     const minSpeed = 100; // Minimum drop interval in ms
     const dropInterval = Math.max(minSpeed, baseSpeed * Math.pow(speedIncreaseFactor, level - 1));
 

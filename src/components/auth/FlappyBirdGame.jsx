@@ -18,11 +18,11 @@ export default function FlappyBirdGame() {
         const userDocRef = doc(db, 'users', user.uid);
         const userDoc = await getDoc(userDocRef);
         
-        if (userDoc.exists() && userDoc.data().flappyBirdHighScore) {
-          setHighScore(userDoc.data().flappyBirdHighScore);
+        if (userDoc.exists() && userDoc.data().flappyBirdHighScore_s2) {
+          setHighScore(userDoc.data().flappyBirdHighScore_s2);
         } else {
           // 최고 점수가 없으면 0으로 초기화
-          await setDoc(userDocRef, { flappyBirdHighScore: 0 }, { merge: true });
+          await setDoc(userDocRef, { flappyBirdHighScore_s2: 0 }, { merge: true });
         }
       }
     };
@@ -36,7 +36,7 @@ export default function FlappyBirdGame() {
     if (user && newScore > highScore) {
       const userDocRef = doc(db, 'users', user.uid);
       await updateDoc(userDocRef, {
-        flappyBirdHighScore: newScore
+        flappyBirdHighScore_s2: newScore
       });
       setHighScore(newScore);
       setNewHighScore(true);

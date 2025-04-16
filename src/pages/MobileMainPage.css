@@ -99,4 +99,61 @@
 .mobile-ranking-button:active {
   transform: translateY(0);
   box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+}
+
+.mobile-billboard {
+  max-height: 375px;
+  background-color: #1a1a1a; /* Dark background for the billboard */
+  border-radius: 10px;
+  margin-bottom: 2rem; /* Space below the billboard */
+  padding: 1rem;
+  overflow: hidden; /* Hide content that exceeds max-height */
+  color: #eee;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative; /* 자식 요소의 absolute positioning 기준 */
+  /* 높이를 텍스트 한 줄 정도에 맞게 조정할 수 있습니다. */
+  /* 예: line-height + padding * 2 */
+  min-height: calc(1.1rem * 1.5 + 2rem);
+}
+
+.billboard-title {
+  text-align: center;
+  color: #FFD700; /* Gold color, same as nicknames */
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.winner-items-container {
+  position: relative; /* For absolute positioning of children */
+  /* Adjust height based on one winner item's line height */
+  min-height: calc(1.1rem * 1.5);
+}
+
+.winner-item {
+  position: absolute;
+  top: 0; /* Position relative to container */
+  left: 0;
+  width: 100%;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
+  pointer-events: none; /* 비활성 시 클릭 방지 */
+  font-size: 1.1rem;
+  line-height: 1.5;
+  white-space: nowrap; /* 줄바꿈 방지 */
+  overflow: hidden; /* 혹시 넘칠 경우 숨김 */
+  text-overflow: ellipsis; /* 넘칠 경우 말줄임표 */
+}
+
+.winner-item.active {
+  opacity: 1;
+  pointer-events: auto; /* 활성 시 상호작용 가능 */
+}
+
+.mobile-billboard .nickname {
+  font-weight: bold;
+  color: #FFD700; /* Gold color for nicknames */
+  margin: 0 0.2em;
 } 

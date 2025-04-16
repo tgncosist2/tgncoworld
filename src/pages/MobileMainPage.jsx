@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
@@ -6,6 +6,23 @@ import './MobileMainPage.css';
 
 const MobileMainPage = () => {
   const navigate = useNavigate();
+
+  const winnersData = [
+    { game: "플래피버드", user: "다이겨" },
+    { game: "테트리스", user: "캬하하" },
+    { game: "수박게임", user: "해적" },
+    { game: "사과게임", user: "준성이옆자리" },
+  ];
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setCurrentIndex(prevIndex => (prevIndex + 1) % winnersData.length);
+    }, 3000); // 3초마다 변경
+
+    return () => clearInterval(intervalId); // 컴포넌트 언마운트 시 인터벌 제거
+  }, [winnersData.length]);
 
   const handleLogout = async () => {
     try {
@@ -29,6 +46,21 @@ const MobileMainPage = () => {
         </div>
       </header>
       
+      {/* Electronic Billboard */}
+      <div className="mobile-billboard">
+        <h3 className="billboard-title">시즌 1 명예의 전당</h3>
+        <div className="winner-items-container">
+          {winnersData.map((winner, index) => (
+            <div
+              key={index} // 각 항목에 고유 key 추가
+              className={`winner-item ${index === currentIndex ? 'active' : ''}`}
+            >
+              🏆 [{winner.game} - <span className="nickname">{winner.user}</span>] 🏆
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="mobile-game-container">
         <div className="mobile-game-card" onClick={() => navigate('/flappybird')}>
           <h2>플래피버드</h2>

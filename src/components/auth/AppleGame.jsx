@@ -74,11 +74,11 @@ const AppleGame = () => {
                 const userDocRef = doc(db, 'users', user.uid);
                 try {
                     const userDoc = await getDoc(userDocRef);
-                    if (userDoc.exists() && userDoc.data().appleGameHighScore !== undefined) {
-                        setHighScore(userDoc.data().appleGameHighScore);
+                    if (userDoc.exists() && userDoc.data().appleGameHighScore_s2 !== undefined) {
+                        setHighScore(userDoc.data().appleGameHighScore_s2);
                     } else {
                         // Initialize score if not exists
-                        await setDoc(userDocRef, { appleGameHighScore: 0 }, { merge: true });
+                        await setDoc(userDocRef, { appleGameHighScore_s2: 0 }, { merge: true });
                         setHighScore(0);
                     }
                 } catch (error) {
@@ -115,7 +115,7 @@ const AppleGame = () => {
             const userDocRef = doc(db, 'users', user.uid);
             try {
                 await updateDoc(userDocRef, {
-                    appleGameHighScore: newScore
+                    appleGameHighScore_s2: newScore
                 });
                 console.log("High score updated successfully!");
             } catch (error) {
@@ -253,7 +253,8 @@ const AppleGame = () => {
             });
 
             if (sum === 10) {
-                setScore(prevScore => prevScore + 1);
+                const scoreToAdd = Math.max(1, selectedAppleIds.size - 1); // Calculate score based on count, minimum 1
+                setScore(prevScore => prevScore + scoreToAdd);
                 // Remove selected apples
                 setGrid(prevGrid => {
                     const newGridFlat = prevGrid.flat().map(apple => {
