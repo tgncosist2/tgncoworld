@@ -9,6 +9,7 @@ import RankingPage from './pages/RankingPage';
 import TetrisGame from './components/auth/TetrisGame';
 import SuikaGamePage from './pages/SuikaGamePage';
 import AppleGamePage from './pages/AppleGamePage';
+import UndeadSurvivorGamePage from './pages/UndeadSurvivorGamePage';
 import { auth, signOut } from './firebase';
 import './styles/App.css';
 
@@ -127,6 +128,10 @@ function App() {
          <Route 
           path="/apple"
           element={isAuthenticated ? <AppleGamePage /> : <Navigate to="/" replace />}
+        />
+        <Route 
+          path="/undead"
+          element={isAuthenticated ? <UndeadSurvivorGamePage /> : <Navigate to="/" replace />}
         />
       </Routes>
     </Router>
