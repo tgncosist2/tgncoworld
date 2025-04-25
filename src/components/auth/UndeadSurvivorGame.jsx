@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Unity, useUnityContext } from "react-unity-webgl";
+import { auth, db } from '../../firebase'; // Import auth and db
+import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore'; // Import Firestore functions
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import './UndeadSurvivorGame.css'; // Import the CSS file
 
 // Helper component for the custom loader
 const CustomLoader = ({ loadingProgression }) => {
@@ -53,47 +57,209 @@ const CustomLoader = ({ loadingProgression }) => {
 };
 
 function UndeadSurvivorGame() {
-  const { unityProvider, addEventListener, removeEventListener, isLoaded, loadingProgression } = useUnityContext({
-    loaderUrl: "/unity_build/Build/WebGL3.loader.js",
-    dataUrl: "/unity_build/Build/WebGL3.data",
-    frameworkUrl: "/unity_build/Build/WebGL3.framework.js",
-    codeUrl: "/unity_build/Build/WebGL3.wasm",
+  const { unityProvider, addEventListener, removeEventListener, isLoaded, loadingProgression, sendMessage } = useUnityContext({
+    loaderUrl: "/unity_build/Build/Undead.loader.js",
+    dataUrl: "/unity_build/Build/Undead.data.gz",
+    frameworkUrl: "/unity_build/Build/Undead.framework.js.gz",
+    codeUrl: "/unity_build/Build/Undead.wasm.gz",
   });
+  const navigate = useNavigate(); // Initialize useNavigate
+  const [isHovering, setIsHovering] = useState(false); // State for hover effect
 
-  const handleGameData = useCallback((jsonData) => {
+  // Unity에 데이터를 보내기 위한 함수
+  const provideHighScoreDataToUnity = useCallback(async (gameObjectName, functionName) => {
+    console.log(`Unity requested high score data. GameObject: ${gameObjectName}, Function: ${functionName}`);
+
+    // isLoaded 상태만 확인
+    if (!isLoaded) {
+      console.error(`Cannot send data to Unity. isLoaded: ${isLoaded}`);
+      // Unity가 준비되지 않았으므로 아무것도 보내지 않음
+      return;
+    }
+
+    const user = auth.currentUser;
+    let highScores = {
+      highTimeSurvived: 0,
+      highKills: 0,
+      highLevel: 0
+    };
+    let jsonData;
+
+    if (!user) {
+      console.warn("User not logged in. Sending default high scores (0) to Unity.");
+      // 로그인되지 않았을 경우 기본값 전송
+      jsonData = JSON.stringify(highScores);
+    } else {
+      const userDocRef = doc(db, 'users', user.uid);
+      try {
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          // Firestore 필드 이름 사용
+          highScores = {
+            highTimeSurvived: data.undeadHighTimeSurvived_s3 || 0,
+            highKills: data.undeadHighKills_s3 || 0,
+            highLevel: data.undeadHighLevel_s3 || 0
+          };
+        } else {
+          console.log("User document doesn't exist, sending default high scores (0).");
+        }
+        jsonData = JSON.stringify(highScores);
+      } catch (error) {
+        console.error("Error fetching high scores from Firestore:", error);
+        // Firestore 오류 시에도 기본값 전송
+        jsonData = JSON.stringify(highScores); 
+      }
+    }
+
+    console.log(`Sending high scores to Unity (${gameObjectName}.${functionName}): ${jsonData}`);
+
+    // sendMessage 함수 사용
+    try {
+      sendMessage(gameObjectName, functionName, jsonData);
+    } catch (error) {
+        console.error("Error calling sendMessage:", error);
+    }
+
+  }, [isLoaded, sendMessage, db, auth]); // isLoaded와 sendMessage를 의존성 배열에 추가
+
+  // Unity에서 게임 오버 데이터를 받을 함수 (기존 로직 유지)
+  const handleGameData = useCallback(async (jsonData) => {
     try {
       const data = JSON.parse(jsonData);
-      console.log("유니티에서 받은 데이터:", data); // 데이터 수신 확인용 로그 추가
+      console.log("유니티에서 받은 데이터:", data); // Data received log
 
-    } catch (error) {
-      console.error("유니티로부터 받은 데이터 처리 오류:", error, "Received data:", jsonData);
+      const user = auth.currentUser;
+      if (!user) {
+        console.error("User not logged in. Cannot save high score.");
+        return;
+      }
+
+      const userDocRef = doc(db, 'users', user.uid);
+      let existingData = {};
+      let needsUpdate = false;
+      const updates = {};
+
+      try {
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          existingData = userDoc.data();
+        } else {
+          // Initialize fields if document doesn't exist or fields are missing
+          console.log("Initializing high score fields for user:", user.uid);
+          await setDoc(userDocRef, { 
+            undeadHighTimeSurvived_s3: 0,
+            undeadHighLevel_s3: 0,
+            undeadHighKills_s3: 0
+          }, { merge: true });
+          existingData = { 
+            undeadHighTimeSurvived_s3: 0,
+            undeadHighLevel_s3: 0,
+            undeadHighKills_s3: 0
+          };
+        }
+
+        // Ensure fields exist in existingData, default to 0 if not
+        const currentHighTime = existingData.undeadHighTimeSurvived_s3 || 0;
+        const currentHighLevel = existingData.undeadHighLevel_s3 || 0;
+        const currentHighKills = existingData.undeadHighKills_s3 || 0;
+
+        // Compare and prepare updates
+        // Assuming Unity sends data with keys: timeSurvived, level, kills
+        if (data.timeSurvived !== undefined && data.timeSurvived > currentHighTime) {
+          updates.undeadHighTimeSurvived_s3 = data.timeSurvived;
+          needsUpdate = true;
+          console.log(`New high time: ${data.timeSurvived} (Old: ${currentHighTime})`);
+        }
+        if (data.level !== undefined && data.level > currentHighLevel) {
+          updates.undeadHighLevel_s3 = data.level;
+          needsUpdate = true;
+          console.log(`New high level: ${data.level} (Old: ${currentHighLevel})`);
+        }
+        if (data.kills !== undefined && data.kills > currentHighKills) {
+          updates.undeadHighKills_s3 = data.kills;
+          needsUpdate = true;
+          console.log(`New high kills: ${data.kills} (Old: ${currentHighKills})`);
+        }
+
+        // Update Firestore if necessary
+        if (needsUpdate) {
+          console.log("Updating Firestore with new high scores:", updates);
+          await updateDoc(userDocRef, updates);
+        } else {
+           console.log("No new high scores detected.");
+        }
+
+      } catch (dbError) {
+        console.error("Firebase Firestore 작업 오류:", dbError);
+      }
+
+    } catch (parseError) {
+      console.error("유니티로부터 받은 데이터 처리 오류:", parseError, "Received data:", jsonData);
     }
   }, []);
 
-  // 받아온 데이터를 처리하는 함수를 유니티에서 호출할 수 있도록 설정
+  // Unity가 호출할 함수들을 window 객체에 등록
   useEffect(() => {
+    console.log("Registering Unity communication functions.");
     window.HandleGameOverData = handleGameData;
-    addEventListener("HandleGameOverData", handleGameData);
+    window.fetchHighScoreData = provideHighScoreDataToUnity; // 이전 단계에서 변경한 이름 유지
 
-    // 컴포넌트가 언마운트될 때 함수를 제거
     return () => {
+      console.log("Unregistering Unity communication functions.");
       delete window.HandleGameOverData;
-      removeEventListener("HandleGameOverData", handleGameData);
+      delete window.fetchHighScoreData;
     };
-  }, [isLoaded, addEventListener, removeEventListener, handleGameData]);
+  }, [handleGameData, provideHighScoreDataToUnity]);
+
+  // Base button style
+  const baseButtonStyle = {
+    width: '100%',
+    maxWidth: '360px', // From SuikaGame.css
+    padding: '1rem', // From SuikaGame.css
+    background: 'linear-gradient(45deg, #ffcc80, #ffb74d)', // From SuikaGame.css
+    color: '#5d4037', // From SuikaGame.css
+    border: 'none', // From SuikaGame.css
+    borderRadius: '10px', // From SuikaGame.css
+    fontSize: '1.1rem', // From SuikaGame.css
+    fontWeight: 600, // From SuikaGame.css
+    cursor: 'pointer', // From SuikaGame.css
+    transition: 'all 0.3s ease', // From SuikaGame.css
+    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)', // From SuikaGame.css
+    marginTop: '20px', // Keep existing margin
+  };
+
+  // Hover button style
+  const hoverButtonStyle = {
+    ...baseButtonStyle,
+    background: 'linear-gradient(45deg, #ffb74d, #ffa726)', // From SuikaGame.css :hover
+    transform: 'translateY(-2px)', // From SuikaGame.css :hover
+    boxShadow: '0 5px 15px rgba(255, 167, 38, 0.4)', // From SuikaGame.css :hover
+  };
 
   // 메인 컨테이너 정의의
   return (
-    <div style={{ background: "#2C2C2C", color: "#fff", padding: "1rem", position: 'relative', minHeight: '650px' /* Ensure container has height */ }}>
+    <div style={{ background: "#2C2C2C", color: "#fff", padding: "1rem", position: 'relative', minHeight: '750px', display: 'flex', flexDirection: 'column', alignItems: 'center' /* Center items */ }}>
       {!isLoaded && <CustomLoader loadingProgression={loadingProgression} />}
-      <div style={{ width: "470px", margin: "0 auto", visibility: isLoaded ? 'visible' : 'hidden' }}>
-        {/* 유니티 컴포넌트 렌더링 */}
+      <div 
+          className={`unity-container ${isLoaded ? 'loaded' : ''}`} // Apply class name and conditional visibility
+        >
         <Unity
           unityProvider={unityProvider}
-          style={{ width: 470, height: 580 }}
+          className="unity-game" // Apply class name
           devicePixelRatio={window.devicePixelRatio}
         />
       </div>
+      {isLoaded && (
+        <button 
+          onClick={() => navigate('/')} 
+          style={isHovering ? hoverButtonStyle : baseButtonStyle}
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
+        >
+          메인 화면으로 가기
+        </button>
+      )}
     </div>
   );
 }

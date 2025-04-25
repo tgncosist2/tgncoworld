@@ -48,14 +48,22 @@ const MobileMainPage = () => {
       
       {/* Electronic Billboard */}
       <div className="mobile-billboard">
-        <h3 className="billboard-title">시즌1 명예의 전당</h3>
+        <h3 className="billboard-title">시즌2 명예의 전당</h3>
         <div className="winner-items-container">
-          {winnersData.map((winner, index) => (
+          {[
+            '🏆 [플래피버드 - <span class="nickname">갓현석</span>] 🏆',
+            '🏆 [테트리스 - <span class="nickname">더더덕범</span>] 🏆',
+            '🏆 [수박게임 - <span class="nickname">장태규</span>] 🏆',
+            '🏆 [사과게임 - <span class="nickname">준성이옆자리</span>] 🏆',
+            '🏆 [언데드서바이벌 - <span class="nickname">해적</span>] 🏆',
+            '🏆 [핀히트 - <span class="nickname">jaein</span>] 🏆'
+          ].map((winnerText, index) => (
             <div
-              key={index} // 각 항목에 고유 key 추가
+              key={index}
               className={`winner-item ${index === currentIndex ? 'active' : ''}`}
+              dangerouslySetInnerHTML={{ __html: winnerText }}
             >
-              🏆 [{winner.game} - <span className="nickname">{winner.user}</span>] 🏆
+              {/* Content is set via dangerouslySetInnerHTML */}
             </div>
           ))}
         </div>
@@ -73,6 +81,14 @@ const MobileMainPage = () => {
         <div className="mobile-game-card" onClick={() => navigate('/suika')}>
           <h2>🍉 수박 게임</h2>
           <p>과일을 합쳐 수박을 만들어보세요!</p>
+        </div>
+        <div className="mobile-game-card" onClick={() => navigate('/undead')}>
+          <h2>💀 언데드서바이벌</h2>
+          <p>좀비들로부터 살아남으세요!</p>
+        </div>
+        <div className="mobile-game-card" onClick={() => navigate('/pinhit')}>
+          <h2>🎯 핀히트</h2>
+          <p>타겟을 맞춰 점수를 획득하세요!</p>
         </div>
       </div>
     </div>

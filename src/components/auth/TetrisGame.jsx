@@ -92,15 +92,15 @@ export default function TetrisGame() {
         const userDocRef = doc(db, 'users', user.uid);
         try {
             const userDoc = await getDoc(userDocRef);
-            if (userDoc.exists() && userDoc.data().tetrisHighScore_s2 !== undefined) {
-                initialHighScore = userDoc.data().tetrisHighScore_s2;
+            if (userDoc.exists() && userDoc.data().tetrisHighScore_s3 !== undefined) {
+                initialHighScore = userDoc.data().tetrisHighScore_s3;
             } else {
                 // Ensure the field exists if document exists but field doesn't
                  if(userDoc.exists()) {
-                    await setDoc(userDocRef, { tetrisHighScore_s2: 0 }, { merge: true });
+                    await setDoc(userDocRef, { tetrisHighScore_s3: 0 }, { merge: true });
                  } else {
                     // If user doc doesn't exist at all, create it with score
-                     await setDoc(userDocRef, { tetrisHighScore_s2: 0 });
+                     await setDoc(userDocRef, { tetrisHighScore_s3: 0 });
                  }
             }
         } catch (error) {
@@ -127,7 +127,7 @@ export default function TetrisGame() {
         if (user) {
             const userDocRef = doc(db, 'users', user.uid);
             try {
-                await updateDoc(userDocRef, { tetrisHighScore_s2: currentScore });
+                await updateDoc(userDocRef, { tetrisHighScore_s3: currentScore });
                 console.log("Firestore high score updated.");
             } catch (error) {
                 console.error("Error updating Firestore high score:", error);

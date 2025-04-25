@@ -74,11 +74,11 @@ const AppleGame = () => {
                 const userDocRef = doc(db, 'users', user.uid);
                 try {
                     const userDoc = await getDoc(userDocRef);
-                    if (userDoc.exists() && userDoc.data().appleGameHighScore_s2 !== undefined) {
-                        setHighScore(userDoc.data().appleGameHighScore_s2);
+                    if (userDoc.exists() && userDoc.data().appleGameHighScore_s3 !== undefined) {
+                        setHighScore(userDoc.data().appleGameHighScore_s3);
                     } else {
                         // Initialize score if not exists
-                        await setDoc(userDocRef, { appleGameHighScore_s2: 0 }, { merge: true });
+                        await setDoc(userDocRef, { appleGameHighScore_s3: 0 }, { merge: true });
                         setHighScore(0);
                     }
                 } catch (error) {
@@ -115,7 +115,7 @@ const AppleGame = () => {
             const userDocRef = doc(db, 'users', user.uid);
             try {
                 await updateDoc(userDocRef, {
-                    appleGameHighScore_s2: newScore
+                    appleGameHighScore_s3: newScore
                 });
                 console.log("High score updated successfully!");
             } catch (error) {

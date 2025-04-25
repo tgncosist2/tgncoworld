@@ -31,7 +31,7 @@ const MainPage = () => {
       <div className="main-body">
         <div className="marquee-container">
           <div className="marquee-content">
-            🏆 시즌1 명예의 전당 [플래피버드 - <span className="nickname">다이겨</span>] 🏆 [테트리스 - <span className="nickname">캬하하</span>] 🏆 [수박게임 - <span className="nickname">해적</span>] 🏆 [사과게임 - <span className="nickname">준성이옆자리</span>] 🏆
+            🏆 시즌2 명예의 전당 [플래피버드 - <span className="nickname">갓현석</span>] 🏆 [테트리스 - <span className="nickname">더더덕범</span>] 🏆 [수박게임 - <span className="nickname">장태규</span>] 🏆 [사과게임 - <span className="nickname">준성이옆자리</span>] 🏆 [언데드서바이벌 - <span className="nickname">해적</span>] 🏆 [핀히트 - <span className="nickname">jaein</span>] 🏆
           </div>
         </div>
       </div>
@@ -54,6 +54,16 @@ const MainPage = () => {
         <div className="game-card" onClick={() => navigate('/apple')}>
           <h2>🍎 사과 게임</h2>
           <p>사과를 모아 10을 만들어보세요!</p>
+        </div>
+
+        <div className="game-card" onClick={() => navigate('/undead')}>
+          <h2>💀 언데드서바이벌</h2>
+          <p>쏟아지는 좀비들을 처치하세요!</p>
+        </div>
+
+        <div className="game-card" onClick={() => navigate('/pinhit')}>
+          <h2>🎯 핀히트</h2>
+          <p>타겟을 맞춰 점수를 획득하세요!</p>
         </div>
       </div>
     </div>

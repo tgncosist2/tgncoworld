@@ -1,0 +1,27 @@
+/* src/components/auth/UndeadSurvivorGame.css */
+
+.unity-container {
+  width: 600px; /* 데스크톱 너비 */
+  height: 750px; /* 데스크톱 높이 */
+  margin: 0 auto; /* Center horizontally */
+  visibility: hidden; /* Default visibility */
+  transition: visibility 0.5s ease-in-out; /* Add transition for smooth appearance */
+}
+
+.unity-container.loaded {
+    visibility: visible; /* Show when loaded */
+}
+
+.unity-game {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Mobile styles (adjust breakpoint as needed) */
+@media (max-width: 600px) {
+  .unity-container {
+    width: 320px; /* 모바일 너비 */
+    height: 400px; /* 모바일 높이 */
+  }
+} 
