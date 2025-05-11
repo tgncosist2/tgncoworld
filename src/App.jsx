@@ -11,6 +11,7 @@ import SuikaGamePage from './pages/SuikaGamePage';
 import AppleGamePage from './pages/AppleGamePage';
 import UndeadSurvivorGamePage from './pages/UndeadSurvivorGamePage';
 import PinHitGamePage from './pages/PinHitGamePage';
+import TgncoShooterPage from './pages/TgncoShooterPage';
 import { auth, signOut } from './firebase';
 import './styles/App.css';
 
@@ -137,6 +138,10 @@ function App() {
         <Route 
           path="/pinhit"
           element={isAuthenticated ? <PinHitGamePage /> : <Navigate to="/" replace />}
+        />
+        <Route 
+          path="/tgncoshooter"
+          element={isAuthenticated ? <TgncoShooterPage /> : <Navigate to="/" replace />}
         />
       </Routes>
     </Router>

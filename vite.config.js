@@ -12,7 +12,7 @@ export default defineConfig({
     allowedHosts: ['tgnco.world', 'www.tgnco.world'], // 허용된 도메인 추가
     hmr: {
       host: 'tgnco.world',  // WebSocket 통신을 위한 호스트 지정
-      protocol: 'wss',  // HTTPS에서 WebSocket은 wss 사용
+      protocol: 'ws',  // HTTPS에서 WebSocket은 wss 사용
     }
   }
 })
