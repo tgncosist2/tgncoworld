@@ -1,8 +1,8 @@
 /* src/components/auth/UndeadSurvivorGame.css */
 
 .unity-container {
-  width: 600px; /* 데스크톱 너비 */
-  height: 750px; /* 데스크톱 높이 */
+  width: 480px; /* 데스크톱 너비 */
+  height: 600px; /* 데스크톱 높이 */
   margin: 0 auto; /* Center horizontally */
   visibility: hidden; /* Default visibility */
   transition: visibility 0.5s ease-in-out; /* Add transition for smooth appearance */

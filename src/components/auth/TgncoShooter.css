@@ -12,7 +12,14 @@
 
 @media (max-width: 375px) {
   .tgnco-shooter-container {
-    width: 400px !important;
-    height: 225px !important;
+    width: 320px !important;
+    height: 180px !important;
   }
 } 
+
+@media (max-width: 800px) {
+  .tgnco-shooter-container {
+    width: 480px !important;
+    height: 270px !important;
+  }
+}
