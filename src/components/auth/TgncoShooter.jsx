@@ -1,6 +1,6 @@
 import React from 'react';
 import { Unity, useUnityContext } from "react-unity-webgl";
-import './UndeadSurvivorGame.css';
+import './TgncoShooter.css';
 
 function TgncoShooter() {
   const { unityProvider, isLoaded, loadingProgression } = useUnityContext({
@@ -35,15 +35,7 @@ function TgncoShooter() {
       position: 'relative'
     }}>
       {!isLoaded && <LoadingScreen />}
-      <div style={{
-        width: '1280px',
-        height: '720px',
-        position: 'relative',
-        boxShadow: '0 4px 32px rgba(0,0,0,0.5)',
-        background: '#111',
-        borderRadius: '12px',
-        overflow: 'hidden'
-      }}>
+      <div className="tgnco-shooter-container">
         <Unity
           unityProvider={unityProvider}
           style={{
