@@ -90,6 +90,10 @@ const MobileMainPage = () => {
           <h2>🎯 핀히트</h2>
           <p>타겟을 맞춰 점수를 획득하세요!</p>
         </div>
+        <div className="mobile-game-card" onClick={() => navigate('/bullethell')}>
+          <h2>💥 불랫헬</h2>
+          <p>총알을 피하며 생존하세요!</p>
+        </div>
       </div>
     </div>
   );

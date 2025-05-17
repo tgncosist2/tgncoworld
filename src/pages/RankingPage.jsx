@@ -49,6 +49,10 @@ const RankingPage = () => {
       scoreField: 'undeadHighTimeSurvived',
       levelField: 'undeadHighLevel',
       killsField: 'undeadHighKills'
+    },
+    bullethell: {
+      title: '불랫헬',
+      scoreField: 'bullethellHighScore'
     }
   };
 
@@ -361,6 +365,15 @@ const RankingPage = () => {
               핀히트
             </button>
           )}
+          {/* Conditionally show Bullet Hell for Season 3 */}
+          {selectedSeason === 3 && (
+            <button
+              className={`game-nav-button ${selectedGame === 'bullethell' ? 'active' : ''}`}
+              onClick={() => setSelectedGame('bullethell')}
+            >
+              불랫헬
+            </button>
+          )}
         </nav>
       </header>
 
@@ -396,6 +409,11 @@ const RankingPage = () => {
                        <div className="metric-value">{ranking.kills}</div>
                      </div>
                    </>
+                 ) : selectedGame === 'bullethell' ? ( // 탄막 피하기 점수 표시 (시간 기반)
+                  <div className="metric-card wide">
+                    <div className="metric-label">생존시간</div>
+                    <div className="metric-value">{formatTime(ranking.score)}</div>
+                  </div>
                  ) : (
                    /* Generic Score Metric for other games in Card Layout (S3) */
                    <div className="metric-card wide"> {/* Add 'wide' class if you want it centered */}
